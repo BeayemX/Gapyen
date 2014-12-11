@@ -8,7 +8,7 @@ def comp(name):
 def cont(name):
     return Container(name)
 
-gm = GameManager()
+#gm = GameManager()
 
 c = cont("Player")
 c.addComponent(comp("InputProcessor"))
@@ -20,7 +20,5 @@ d = cont("Enemy")
 d.addComponent(comp("Movement"))
 d.addComponent(comp("Health"))
 
-gm.addContainer(c)
-gm.addContainer(d)
-
-
+#gm.addContainer(c)
+#gm.addContainer(d)
