@@ -1,9 +1,8 @@
 import GameLoop
 
 def main():
-    
     #timeStuff()
-    GameLoop.startServer()
+    GameLoop.start_server()
     GameLoop.runGameLoop()
     
 if __name__== "__main__":

@@ -1,42 +1,29 @@
-# -*- coding: cp1252 -*-
+import GameManager
+
 from Component import Component
 
+"""
 class Container(Component):
     
     def __init__(self, uid):
         Component.__init__(self, "Container")
         self.uid = uid
+        GameManager.add_container(self)
         
-    def addComponent(self, comp):
+    def add_component(self, comp):
         if Component.active:
             self.components.append(comp)
         else:
-            print "noe"
-            
-    """
-    def __str__(self):
-        text = "\n\nContainter: "
-        text += str(self.id)
-        text += "\n"
-        text += "Components:"
-
-        for comp in self.components:
-            text += "\n\t"
-            text += str(comp.name)
-        return text
-
-    def getStructureAsStringArray(self):
-        return [str(comp) for comp in self.components]
-
-    """
-
+            print "not active"
 
     def activate(self):
         Component.activate(self)
         self.parent.components = []
-        self.parent.addComponent = self.addComponent
+        self.parent.add_component = self.add_component
 
     def deactivate(self):
         del self.parent.components
-        del self.parent.addComponent
+        del self.parent.add_component
         Component.deactivate(self)
+
+"""

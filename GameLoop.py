@@ -12,7 +12,7 @@ clock = Clock()
 objects = []
 updaters = []
 
-def startServer():
+def start_server():
     xprotocol.startup(1)
     print "started server()"
     xprotocol.add_session_listener(connect)

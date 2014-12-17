@@ -1,24 +1,18 @@
-from GameManager import GameManager
-from Container import Container
+import GameManager
 from Component import Component
 
-def comp(name):
-    return Component(name)
+GameManager.push_scope()
 
-def cont(name):
-    return Container(name)
+p = Component("Player")
+p.addchildren(Component("InputProcessor"))
+p.addchildren(Component("Health"))
+p.addchildren(Component("Movement"))
+p.addchildren(Component("Inventory"))
 
-#gm = GameManager()
+d = Component("Enemy")
+d.addchildren(Component("Movement"))
+d.addchildren(Component("Health"))
 
-c = cont("Player")
-c.addComponent(comp("InputProcessor"))
-c.addComponent(comp("Health"))
-c.addComponent(comp("Movement"))
-c.addComponent(comp("Inventory"))
+GameManager.remove_entity(p)
 
-d = cont("Enemy")
-d.addComponent(comp("Movement"))
-d.addComponent(comp("Health"))
-
-#gm.addContainer(c)
-#gm.addContainer(d)
+pass

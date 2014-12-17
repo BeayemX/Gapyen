@@ -2,8 +2,8 @@ class Updater:
 
     counter = 0
 
-    def __init__(self, name, updatesPerSec, methodToCall):
-        self.name = name
+    def __init__(self, uid, updatesPerSec, methodToCall):
+        self.name = uid
         self.frequency = 1.0 / updatesPerSec
         self.methodToCall = methodToCall
         self.timer = 0.0
@@ -20,3 +20,4 @@ class Updater:
         x = self.frequency - self.timer
         print "x:", x
         return max(0, x)
+

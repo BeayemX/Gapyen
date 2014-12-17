@@ -1,11 +1,15 @@
-class Component:        
-    def __init__(self, name, parent = None, active = False):
+import GameManager
+
+
+class Component:
+    #def __init__(self, name, parent=None, active=False):
+    def __init__(self, name):
         self.name = name
-        self.active = active
-        self.parent = parent
-        
-        if (self.active):
-            activate();
+        self.active = True
+        self.parent = None
+        self.children = []
+
+        GameManager.add_entity(self)
 
     def __str__(self):
         return self.name
@@ -13,8 +17,26 @@ class Component:
     def activate(self):
         self.active = True
 
+        for child in self.children:
+            child.activate()
+
     def deactivate(self):
         self.active = False
 
-    def setParent(self, parent):
+        for child in self.children:
+            child.deactivate()
+
+    def setparent(self, parent):
+        if self.parent != None:
+            self.parent.removechildren(self)
+
         self.parent = parent
+
+    def addchildren(self, child):
+        if child.parent != None:
+            child.parent.removechildren(child)
+
+        self.children.append(child)
+
+    def removechildren(self, child):
+        self.children.remove(child)

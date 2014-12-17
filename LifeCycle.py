@@ -1,7 +1,8 @@
 from Component import Component
-#TODO WIP 
+import xprotocol
+
+# TODO what exactly should i do? code clean up?
 class LifeCycle(Component):
-    
     def __init__(self):
         Component.__init__(self)
 

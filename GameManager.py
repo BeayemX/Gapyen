@@ -1,22 +1,25 @@
-from Container import Container
+from Component import Component
 
-class GameManager:
+#TODO should there always be a scope. because it is possible to try to add_entity without a pushed_scope to cause an error
 
-    containers = []
-    
-    def __init__(self):
-        pass
+scopes = []
 
-    def addContainer(self, container):
-        self.containers.append(container)
 
-    def printOutline(self):
-        print (str(self))
+def add_entity(component):
+    component.activate()
+    scopes[-1].append(component)
 
-    def __str__(self):
-        text = ""
-        for cont in self.containers:
-            text += (str(cont))
-        return text
-        
-        
+# TODO should the children of the component also be removed?
+def remove_entity(component):
+    component.deactivate()
+    scopes[-1].remove(component)
+
+
+def push_scope():
+    scopes.append([])
+
+
+def pop_scope():
+    scope = scopes.pop()
+    for component in scope:
+        component.deactivate()
