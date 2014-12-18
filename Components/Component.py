@@ -1,4 +1,4 @@
-import GameManager
+from Managers import GameManager
 
 
 class Component:
@@ -27,16 +27,18 @@ class Component:
             child.deactivate()
 
     def setparent(self, parent):
-        if self.parent != None:
+        if self.parent != None: # TODO use 'if not self.parent' ?
             self.parent.removechildren(self)
 
         self.parent = parent
+        self.activate()
 
     def addchildren(self, child):
         if child.parent != None:
             child.parent.removechildren(child)
 
         self.children.append(child)
+        child.setparent(self)
 
     def removechildren(self, child):
         self.children.remove(child)

@@ -1,5 +1,5 @@
-from Component import Component
-import xprotocol
+from Components import Component
+from Utilities import xprotocol
 
 # TODO what exactly should i do? code clean up?
 class LifeCycle(Component):

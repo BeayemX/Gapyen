@@ -16,7 +16,7 @@ the network module for communication.
 
 __VERSION__ = '1.0.0'
 
-import network
+from Utilities import network
 
 _clients = []
 _num_clients = None

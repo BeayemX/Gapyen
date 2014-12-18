@@ -1,5 +1,5 @@
-import GameManager
-from Component import Component
+from Managers import GameManager
+from Components import Component
 
 GameManager.push_scope()
 

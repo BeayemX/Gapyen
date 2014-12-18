@@ -1,5 +1,6 @@
 import time
 
+
 class Clock:    
     def __init__(self):
         self.prevTime = 0.0

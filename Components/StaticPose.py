@@ -1,4 +1,5 @@
-from Component import Component
+from Components import Component
+
 
 class StaticTransform(Component):
 
