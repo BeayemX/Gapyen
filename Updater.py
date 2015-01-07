@@ -1,7 +1,7 @@
 from Managers import UpdaterManager
 
 
-class Updater:
+class Updater(object):
 
     def __init__(self, uid, updatesPerSec, methodToCall):
         self.name = uid
@@ -9,7 +9,7 @@ class Updater:
         self.methodToCall = methodToCall
         self.timer = 0.0
         self.counter = 0
-        self.paused = False;
+        self.paused = False
         UpdaterManager.updaterList.append(self)
 
     def update(self, delta):

@@ -11,7 +11,7 @@ def add_entity(component):
 # TODO should the children of the component also be removed?
 def remove_entity(component):
     component.deactivate()
-    scopes[-1].remove(component)
+    scopes[-1].remove(component) # todo not sure if this works, what if componenet is not in the last scope?
 
 
 def push_scope():
