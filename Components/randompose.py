@@ -1,14 +1,15 @@
-import math, random, updater
-from component import Thingy
+import math, random
+from Utilities import  xprotocol
+from Components.Component import Component
+from Components.Updatable import Updateable
 
-# TODO implement me. just copied
-class RandomPose(Thingy):
+class RandomPose(Component, Updateable):
 
-    def __init__(self, world_width, world_height, rate):
-        Thingy.__init__(self)
+    def __init__(self, world_width, world_height):
+        Updateable.__init__(self)
+        #Component.__init__(self)
         self.width = world_width
         self.height = world_height
-        self.rate = rate
 
     def _new_pose(self):
         x = random.uniform(-self.width * 0.5, self.width * 0.5)
@@ -19,19 +20,18 @@ class RandomPose(Thingy):
         self.parent.angle = angle
 
     def activate(self):
-        Thingy.activate(self)
+        Component.activate(self)
         self._new_pose()
-        updater.add(self.update, self.rate)
 
     def deactivate(self):
-        updater.remove(self.update)
         del self.parent.pos
         del self.parent.angle
-        Thingy.deactivate(self)
+        Component.deactivate(self)
 
     def update(self):
         self._new_pose()
-        xprotocol.move_entity(self.parent.uid,
+
+        xprotocol.move_entity("tri",
                               self.parent.pos[0],
                               self.parent.pos[1],
                               self.parent.angle) 

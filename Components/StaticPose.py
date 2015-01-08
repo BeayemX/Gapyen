@@ -1,10 +1,10 @@
-from Components import Component
+from Components.Component import Component
 
 
 class StaticTransform(Component):
 
     def __init__(self, pos, angle):
-        Component.__init__(self, "StaticTransform")
+        Component.__init__(self)
         self.initPos = tuple(pos)
         self.initAngle = angle
 

@@ -1,4 +1,4 @@
-from Managers import UpdaterManager
+"""from Managers import UpdaterManager
 
 
 class Updater(object):
@@ -25,4 +25,4 @@ class Updater(object):
     def TimeTillNextCall(self):
         x = self.frequency - self.timer
         return max(0, x)
-
+"""

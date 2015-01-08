@@ -1,5 +1,5 @@
 from Components.Component import Component
-from Updater import Updater
+#from Updater import Updater
 
 
 class UpdateComponent(Component):

@@ -2,23 +2,25 @@ import random
 
 from Utilities import xprotocol
 from Managers import UpdaterManager
-from Updater import  Updater
+#from Updater import  Updater
 
 from Components.Component import Component
+from Components.Updatable import Updateable
 
 
-class NetworkWrapper(Component):
+class NetworkWrapper(Component, Updateable):
 
-    def __init__(self, name):
-        Component.__init__(self, name)
-        self.worldWidth = 1920
-        self.triangleSize = 960
+    def __init__(self, timelinename):
+        Updateable.__init__(self, 1, timelinename)
+        self.worldWidth = 100
+        self.triangleSize = 100
         self.objects = []
 
     def activate(self):
         Component.activate(self)
         self.start_server()
-        UpdaterManager.updaterList.append(Updater("network", 50, self.update))
+        #UpdaterManager.updaterList.append(Updater("network", 50, self.update))
+        self.adjustView()
 
 
     def deactivate(self):
@@ -40,17 +42,21 @@ class NetworkWrapper(Component):
             print "session started"
             #spawnRandTri()
             self.adjustView()
+            self.draw()
         else:
             print "session ended"
 
+    def draw(self):
+        pass
 
     def update(self):
         xprotocol.update()
-        self.spawnRandTri()
+        #self.spawnRandTri()
 
 
     def adjustView(self):
         xprotocol.set_world_width(self.worldWidth)
+        xprotocol.update()
 
 
     def spawnRandTri(self):

@@ -1,4 +1,65 @@
+#BaseUpdater
+#   has time since startup
+#   has base timeline
 
+# updater
+#   trigger method on updateable without time
+
+# TimeUpdater (timeline, updater)
+#   trigger update with delta time
+
+
+
+# service
+
+
+
+
+
+
+
+
+
+# updater and game loop not component
+# do i need a children list in component?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# TODO netzwerk demo aus components zambauen
 
 
 # todo modules bag and updater
