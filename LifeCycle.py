@@ -1,6 +1,6 @@
 from Components.Component import Component
-from Managers import GameManager
-from Utilities import xprotocol
+from Components import GameManager
+
 
 class LifeCycle(Component):
 

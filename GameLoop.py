@@ -1,7 +1,3 @@
-
-from Utilities import xprotocol
-
-
 """
 def networkUpdate():
     xprotocol.update()

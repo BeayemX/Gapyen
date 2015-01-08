@@ -1,4 +1,4 @@
-from Utilities import xprotocol
+import xprotocol
 from Components.Component import Component
 
 class GameSession(Component):

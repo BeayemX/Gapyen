@@ -1,7 +1,6 @@
 import time
-
-import TimelineManager
-from Utilities.Clock import Clock
+import GameManager
+from Clock import Clock
 
 
 maxSleepTime = 1
@@ -22,9 +21,9 @@ def updateAllUpdaters():
     """
 
 
-    for key in TimelineManager.timelines:
-        if not TimelineManager.timelines[key].paused:
-            TimelineManager.timelines[key].elapsetime(delta)
+    for key in GameManager.timelines:
+        if not GameManager.timelines[key].paused:
+            GameManager.timelines[key].elapse_time(delta)
 
     for u in updatables:
         u.update()
