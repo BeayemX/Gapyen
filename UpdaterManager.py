@@ -31,7 +31,8 @@ def updateAllUpdaters():
     """
     GameManager.timelines["Default"].elapse_time(delta)
     # time.sleep(sleeptime)  # todo implement me
-    time.sleep(1.0 / 60.0)
+    #time.sleep(1.0 / 60.0)
+    time.sleep(1.3)
 
 
 def startLoop():

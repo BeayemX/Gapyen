@@ -9,18 +9,20 @@ def main():
     t_def.add(Name("Default"))
     t_def.add(Updater())
     t_def.add(Timeline(60))
-    """
+
     t_slow = Component()
     t_slow.add(Name("Slow"))
-    t_def.add(Updater())
-    t_slow.add(Timeline(2))
-    """
+    t_slow.add(Updater())
+    t_slow.add(Timeline(1/3.0))
+    t_slow.add(TimelineUpdater())
 
-    GameManager.register_timeline(t_def)
+
+    GameManager.register_timeline(t_def)  # todo init swhere
+    GameManager.register_timeline(t_slow)
     # GameManager.register_timeline(t_slow)
 
     t_def.activate()
-    # t_slow.activate()
+    t_slow.activate()
 
     """
     timesource = Component()
@@ -41,8 +43,12 @@ def main():
 
 
 
-    t_def.add_updatable(network)
+    t_def.add_updatable(t_slow)
     t_def.add_updatable(t)
+
+    t_slow.add_updatable(network)
+
+
 
 
     """

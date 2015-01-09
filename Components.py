@@ -128,6 +128,7 @@ class Timeline(Component):
         self.timescale = timescale
         self.frequency = 1.0 / updates_per_sec
         self.timer = 0.0
+        self.last_notify_timestamp = 0.0
 
     def activate(self):
         Component.activate(self)
@@ -156,51 +157,59 @@ class Timeline(Component):
         self.parent.paused = False
 
     def elapse_time(self, delta):
-        self.parent.elapsedtime += delta * self.parent.timescale # todo not sure if correct / needed
+        if not self.paused:
+            self.parent.elapsedtime += delta * self.parent.timescale # todo not sure if correct / needed
 
-        self.timer += delta
-        # print self.name + "elapsed time: " + str(self.elapsedtime)
+            self.timer += delta
+            # print self.name + "elapsed time: " + str(self.elapsedtime)
 
-        if self.timer > self.parent.frequency:
-            self.timer -= self.parent.frequency
-            self.notify(self.parent.frequency)  # todo not sure if correct, maybe sth clock tick wise?
+            if self.timer >= self.parent.frequency:
+                self.timer -= self.parent.frequency
+                self.notify(self.parent.frequency)  # todo not sure if correct, maybe sth clock tick wise?
 
     def notify(self, delta):
-        self.parent.update(delta)  # should call an updater component which calls all updateables
+        # fixme crap weg
+        if not self.parent.name == "Default" or True:
+            print self.parent.name + ".elapsedtime = " + str(self.parent.elapsedtime)
+
+        send_delta = self.parent.elapsedtime - self.last_notify_timestamp
+        self.last_notify_timestamp = self.parent.elapsedtime
+
+        self.parent.sendupdate(send_delta)
 
     def time_till_next_call(self):
         x = self.frequency - self.timer  # fixme this doesn't work with timescale, does it?
         return max(0, x)
 
-
 class Updatable(Component):
 
     def __init__(self, updatesPerSec=1, timelinename="Default"):
         Component.__init__(self)
-        self.timelinename = timelinename
-        self.frequency = 1.0 / updatesPerSec
+        #self.timelinename = timelinename
+        #self.frequency = 1.0 / updatesPerSec
 
         #UpdaterManager.updatables.append(self)
-
-    def update(self, delta):
-        #delta = self.parent.timeline.elapsedtime - self.parent.elapsedTime
-        self.parent.elapsedTime += delta
-        #print "updatable.elapsedtime: " + str(self.parent.elapsedTime)
 
     def activate(self):
         Component.activate(self)
 
-        self.parent.timeline = GameManager.timelines[self.timelinename]
-        self.parent.elapsedTime = self.parent.timeline.elapsedtime  # todo not sure if correct
-        self.parent.frequency = self.frequency
+        #self.parent.timeline = GameManager.timelines[self.timelinename]
+        #self.parent.elapsedTime = self.parent.timeline.elapsedtime  # todo not sure if correct
+        #self.parent.frequency = self.frequency
 
     def deactivate(self):
-
-        del self.parent.timeline
-        del self.parent.elapsedTime
-        del self.parent.frequency
+        #del self.parent.timeline
+        #del self.parent.elapsedTime
+        #del self.parent.frequency
 
         Component.deactivate(self)
+
+    def update(self, delta):
+        #delta = self.parent.timeline.elapsedtime - self.parent.elapsedTime
+        #self.parent.elapsedTime += delta
+        #print "updatable.elapsedtime: " + str(self.parent.elapsedTime)
+        pass
+
 
 
     # todo implement me
@@ -214,7 +223,7 @@ class Updatable(Component):
 class NetworkWrapper(Component, Updatable):
 
     def __init__(self, timelinename):
-        Updatable.__init__(self, 1, timelinename)
+        Updatable.__init__(self)
         self.worldWidth = 100
         self.triangleSize = 100
         self.objects = []
@@ -225,7 +234,6 @@ class NetworkWrapper(Component, Updatable):
         #UpdaterManager.updaterList.append(Updater("network", 50, self.update))
         self.adjustView()
         self.parent.update = self.update
-
 
     def deactivate(self):
         self.stop_server()
@@ -324,8 +332,6 @@ class RandomPose(Updatable):
         """
         degree_per_sec = 360
         self.parent.angle += degree_per_sec * delta / 360 * math.pi * 2
-        print "parent.angle: " + str(self.parent.angle)
-        print "delta: " + str(delta)
 
     def update(self, delta):
 
@@ -394,20 +400,36 @@ class Updater(Component):
     def activate(self):
         Component.activate(self)
         self.parent.updatables = []
-        self.parent.update = self.update
+        self.parent.sendupdate = self.sendupdate
         self.parent.add_updatable = self.add_updatable
 
     def deactivate(self):
         del self.parent.updatables
-        del self.parent.update
+        del self.parent.sendupdate
         del self.parent.add_updatable
 
         Component.deactivate(self)
 
-    def update(self, delta):
-        print "updating " + str(len(self.parent.updatables))
+    def sendupdate(self, delta):
         for u in self.parent.updatables:
             u.update(delta)
 
     def add_updatable(self, updatable):
         self.parent.updatables.append(updatable)
+
+
+class TimelineUpdater(Component):  # TimlineUpdatable? better name?
+
+    def __init__(self):
+        Component.__init__(self)
+
+    def activate(self):
+        Component.activate(self)
+        self.parent.update = self.update
+
+    def deactivate(self):
+        del self.parent.update
+        Component.deactivate(self)
+
+    def update(self, delta):
+        self.parent.elapse_time(delta)
