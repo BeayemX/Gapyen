@@ -2,13 +2,11 @@ import time
 import GameManager
 from Clock import Clock
 
-maxSleepTime = 1
 updaterList = []
 updatables = []
 clock = Clock()
 
 def updateAllUpdaters():
-    sleeptime = maxSleepTime
     delta = clock.tick()
 
     """
@@ -31,10 +29,9 @@ def updateAllUpdaters():
     """
     t = GameManager.timelines["Default"]
     t.elapse_time(delta)
+    time.sleep(t.time_till_next_call())  # nothing can be updated faster than the time source
 
-    time.sleep(t.frequency)  # nothing can be updated faster than the time source
 
-
-def startLoop():
+def start_loop():
     while True:
         updateAllUpdaters()

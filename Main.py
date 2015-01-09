@@ -1,6 +1,7 @@
 from Components import *
 
 import ComponentBuilder
+import UpdaterManager
 
 
 def main():
@@ -8,18 +9,17 @@ def main():
     t_def = Component()
     t_def.add(Name("Default"))
     t_def.add(Updater())
-    t_def.add(Timeline(20))
+    t_def.add(Timeline(60))
 
     t_slow = Component()
     t_slow.add(Name("Slow"))
     t_slow.add(Updater())
-    t_slow.add(Timeline(5))
+    t_slow.add(Timeline(60, 0.5))
     t_slow.add(TimelineUpdater())
 
 
     GameManager.register_timeline(t_def)  # todo init swhere
     GameManager.register_timeline(t_slow)
-    # GameManager.register_timeline(t_slow)
 
     t_def.activate()
     t_slow.activate()
@@ -44,8 +44,8 @@ def main():
 
 
     t_def.add_updatable(t_slow)
-    t_def.add_updatable(t)
 
+    t_slow.add_updatable(t)
     t_slow.add_updatable(network)
 
 
@@ -60,7 +60,7 @@ def main():
     t2.add(RandomPose(100, 100))
     t2.timeline = t_slow
     """
-    UpdaterManager.startLoop()
+    UpdaterManager.start_loop()
 
 
 if __name__ == "__main__":

@@ -3,7 +3,6 @@ import random
 import math
 
 import GameManager
-import UpdaterManager
 
 
 class Component:
@@ -121,7 +120,7 @@ class Name(Component):
 
 class Timeline(Component):
 
-    def __init__(self, updates_per_sec, paused=False, timescale=1.0):
+    def __init__(self, updates_per_sec, timescale=1.0, paused=False):
         Component.__init__(self)
         self.paused = paused
         self.elapsedtime = 0.0
@@ -139,6 +138,7 @@ class Timeline(Component):
         self.parent.elapse_time = self.elapse_time
         self.parent.pause = self.pause
         self.parent.unpause = self.unpause
+        self.parent.time_till_next_call = self.time_till_next_call
 
     def deactivate(self):
         del self.parent.paused
@@ -148,6 +148,7 @@ class Timeline(Component):
         del self.parent.elapse_time
         del self.parent.pause
         del self.parent.unpause
+        del self.parent.time_till_next_call
         GameManager.deregister_timeline(self.parent.name)
 
     def pause(self):
@@ -160,26 +161,21 @@ class Timeline(Component):
         if not self.paused:
             self.parent.elapsedtime += delta * self.parent.timescale # todo not sure if correct / needed
 
-            self.timer += delta
+            self.timer += delta * self.parent.timescale
             # print self.name + "elapsed time: " + str(self.elapsedtime)
 
             if self.timer >= self.parent.frequency:
                 self.timer -= self.parent.frequency
-                self.notify(self.parent.frequency)  # todo not sure if correct, maybe sth clock tick wise?
+                self.notify()
 
-    def notify(self, delta):
-        # fixme crap weg
-        if not self.parent.name == "Default":
-            print self.parent.name + ".elapsedtime = " + str(self.parent.elapsedtime)
-
+    def notify(self):
         send_delta = self.parent.elapsedtime - self.last_notify_timestamp
         self.last_notify_timestamp = self.parent.elapsedtime
-
         self.parent.sendupdate(send_delta)
 
     def time_till_next_call(self):
-        x = self.frequency - self.timer  # fixme this doesn't work with timescale, does it?
-        return max(0, x)
+        x = (self.parent.frequency - self.timer)
+        return max(0, x / self.parent.timescale)
 
 class Updatable(Component):
 
