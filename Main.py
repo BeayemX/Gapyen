@@ -11,7 +11,7 @@ def main():
 
     t_slow = Component()
     t_slow.add(Name("Slow"))
-    t_slow.add(Timeline(t_slow.name, timescale=0.5))
+    t_slow.add(Timeline(t_slow.name, timescale=0.1))
 
 
     GameManager.register_timeline(t_def.name, t_def) # todo name via uid componenet?
