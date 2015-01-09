@@ -1,3 +1,33 @@
+# rename parent to gameobject
+
+# TODO PONG
+"""
+ball
+    id
+    poly
+    body
+    collision detection
+    life cycle
+    postransmitter
+    balllogic
+
+paddle
+    id
+    poly
+    lifecycle
+    body
+    collision
+    netgamepad
+    paddlelogic!! not reusable, just for paddle
+    postransmitter
+"""
+
+
+# todo assignment
+"""
+pausable, everybody can unpause
+"""
+
 #BaseUpdater
 #   has time since startup
 #   has base timeline
@@ -5,6 +35,7 @@
 # updater
 #   trigger method on updateable without time
 
+# time source?
 # TimeUpdater (timeline, updater)
 #   trigger update with delta time
 

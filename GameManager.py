@@ -42,8 +42,8 @@ def deregister_tag(tag, entity):
     tags[tag].remove(entity)
 
 
-def register_timeline(name, timeline):
-    timelines[name] = timeline
+def register_timeline(timeline):
+    timelines[timeline.name] = timeline
 
 def deregister_timeline(name):
     del timelines[name]
