@@ -8,12 +8,12 @@ def main():
     t_def = Component()
     t_def.add(Name("Default"))
     t_def.add(Updater())
-    t_def.add(Timeline(60))
+    t_def.add(Timeline(20))
 
     t_slow = Component()
     t_slow.add(Name("Slow"))
     t_slow.add(Updater())
-    t_slow.add(Timeline(1/3.0))
+    t_slow.add(Timeline(5))
     t_slow.add(TimelineUpdater())
 
 

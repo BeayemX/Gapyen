@@ -29,10 +29,10 @@ def updateAllUpdaters():
         u.update()
         #sleeptime = min(sleeptime, u.TimeTillNextCall())
     """
-    GameManager.timelines["Default"].elapse_time(delta)
-    # time.sleep(sleeptime)  # todo implement me
-    #time.sleep(1.0 / 60.0)
-    time.sleep(1.3)
+    t = GameManager.timelines["Default"]
+    t.elapse_time(delta)
+
+    time.sleep(t.frequency)  # nothing can be updated faster than the time source
 
 
 def startLoop():

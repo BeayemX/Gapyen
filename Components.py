@@ -169,7 +169,7 @@ class Timeline(Component):
 
     def notify(self, delta):
         # fixme crap weg
-        if not self.parent.name == "Default" or True:
+        if not self.parent.name == "Default":
             print self.parent.name + ".elapsedtime = " + str(self.parent.elapsedtime)
 
         send_delta = self.parent.elapsedtime - self.last_notify_timestamp
