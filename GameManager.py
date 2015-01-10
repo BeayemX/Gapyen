@@ -11,10 +11,11 @@ def register_entity(component):
     #component.activate()
     scopes[-1].append(component)
 
-# TODO should the children of the component also be removed?
+
 def deregister_entity(component):
     component.deactivate()
-    scopes[-1].remove(component) # todo not sure if this works, what if componenet is not in the last scope?
+    # todo not sure if this works, what if componenet is not in the last scope?
+    scopes[-1].remove(component)
 
 
 def push_scope():
@@ -45,6 +46,7 @@ def deregister_tag(tag, entity):
 def register_timeline(timeline):
     timelines[timeline.name] = timeline
 
+
 def deregister_timeline(name):  # todo make call possible via name or GO.
     del timelines[name]
 
@@ -52,5 +54,6 @@ def deregister_timeline(name):  # todo make call possible via name or GO.
 def register_shape(shape):
     shapes[shape.name] = shape
 
-def unregister_shape(name):  # todo make call possible via name or GO
+
+def deregister_shape(name):  # todo make call possible via name or GO
     del shapes[name]

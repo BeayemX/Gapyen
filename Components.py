@@ -1,7 +1,5 @@
 import xprotocol
-import random
 import math
-
 import GameManager
 
 
@@ -114,9 +112,6 @@ class Name(Component):
         Component.deactivate(self)
 
 
-### until now everything is clean. --> .parent stuff...
-
-
 class Timeline(Component):
 
     def __init__(self, updates_per_sec, timescale=1.0, paused=False):
@@ -124,7 +119,7 @@ class Timeline(Component):
         self.paused = paused
         self.elapsedtime = 0.0
         self.timescale = timescale
-        self.frequency = 1.0 / updates_per_sec # todo is frequency correct?
+        self.frequency = 1.0 / updates_per_sec  # todo is frequency correct?
         self.timer = 0.0
         self.last_notify_timestamp = 0.0
 
