@@ -52,7 +52,7 @@ class StaticTransform(Component):
 
     def __init__(self, pos, angle):
         Component.__init__(self)
-        self.initPos = tuple(pos)
+        self.initPos = pos
         self.initAngle = angle
 
     def activate(self):
@@ -74,7 +74,7 @@ class Shape(Component):
     def activate(self):
         Component.activate(self)
         self.parent.vertices = self.vertices
-        GameManager.register_shape(self.parent.name, self.parent)
+        GameManager.register_shape(self.parent)
 
     def deactivate(self):
         del self.parent.vertices
@@ -95,7 +95,6 @@ class Tag(Component):
 
     def deactivate(self):
         GameManager.deregister_tag(self._tag, self.parent)
-
         del self.parent.tag
         Component.deactivate(self)
 
@@ -125,7 +124,7 @@ class Timeline(Component):
         self.paused = paused
         self.elapsedtime = 0.0
         self.timescale = timescale
-        self.frequency = 1.0 / updates_per_sec
+        self.frequency = 1.0 / updates_per_sec # todo is frequency correct?
         self.timer = 0.0
         self.last_notify_timestamp = 0.0
 
@@ -171,73 +170,52 @@ class Timeline(Component):
     def notify(self):
         send_delta = self.parent.elapsedtime - self.last_notify_timestamp
         self.last_notify_timestamp = self.parent.elapsedtime
-        self.parent.sendupdate(send_delta)
+        self.parent.send_update(send_delta)
 
     def time_till_next_call(self):
         x = (self.parent.frequency - self.timer)
         return max(0, x / self.parent.timescale)
 
+
+# class not really needed... maybe remove?
 class Updatable(Component):
 
     def __init__(self, updatesPerSec=1, timelinename="Default"):
         Component.__init__(self)
-        #self.timelinename = timelinename
-        #self.frequency = 1.0 / updatesPerSec
-
-        #UpdaterManager.updatables.append(self)
 
     def activate(self):
         Component.activate(self)
 
-        #self.parent.timeline = GameManager.timelines[self.timelinename]
-        #self.parent.elapsedTime = self.parent.timeline.elapsedtime  # todo not sure if correct
-        #self.parent.frequency = self.frequency
-
     def deactivate(self):
-        #del self.parent.timeline
-        #del self.parent.elapsedTime
-        #del self.parent.frequency
-
         Component.deactivate(self)
 
     def update(self, delta):
-        #delta = self.parent.timeline.elapsedtime - self.parent.elapsedTime
-        #self.parent.elapsedTime += delta
-        #print "updatable.elapsedtime: " + str(self.parent.elapsedTime)
         pass
 
 
+class NetworkWrapper(Updatable):
 
-    # todo implement me
-    """
-    def TimeTillNextCall(self):
-        x = self.frequency - self.timer
-        return max(0, x)
-    """
-
-
-class NetworkWrapper(Component, Updatable):
-
-    def __init__(self, timelinename):
+    def __init__(self, numusers):
         Updatable.__init__(self)
-        self.worldWidth = 100
-        self.triangleSize = 100
+        self.worldWidth = 100  # todo save externally?
+        self.triangleSize = 100  # todo save externally
         self.objects = []
+        self.numusers = numusers
 
     def activate(self):
-        Component.activate(self)
+        Updatable.activate(self)
         self.start_server()
-        #UpdaterManager.updaterList.append(Updater("network", 50, self.update))
-        self.adjustView()
+        self.adjust_view()
         self.parent.update = self.update
 
     def deactivate(self):
         self.stop_server()
-        del self.parent.update
-        Component.deactivate(self)
+        # del self.parent.update
+        self.parent.update = Updatable.update  # todo is this correct?
+        Updatable.deactivate(self)
 
     def start_server(self):
-        xprotocol.startup(1) # TODO make 1 variable?
+        xprotocol.startup(self.numusers)
         print "started server()"
         xprotocol.add_session_listener(self.connect)
         print "added listner"
@@ -249,13 +227,12 @@ class NetworkWrapper(Component, Updatable):
     def connect(self, started):
         if started:
             print "session started"
-            #spawnRandTri()
-            self.adjustView()
-            self.spawn()
+            self.adjust_view()
+            self.spawn_objects()
         else:
             print "session ended"
 
-    def spawn(self):
+    def spawn_objects(self):
         for key in GameManager.shapes:
             shape = GameManager.shapes[key]
             xprotocol.spawn_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle, shape.vertices)
@@ -263,57 +240,30 @@ class NetworkWrapper(Component, Updatable):
     def update(self, delta):
         xprotocol.update()
 
-
-    def adjustView(self):
+    def adjust_view(self):
         xprotocol.set_world_width(self.worldWidth)
         xprotocol.update()
-
-
-    def spawnRandTri(self):
-        name = "RandomTri" + str(len(self.objects))
-        self.objects.append(name)
-        xprotocol.spawn_entity(name, 0, 0, 0,
-                               [(random.randint(-self.triangleSize, self.triangleSize), random.randint(-self.triangleSize, self.triangleSize)),
-                                (random.randint(-self.triangleSize, self.triangleSize), random.randint(-self.triangleSize, self.triangleSize)),
-                                (random.randint(-self.triangleSize, self.triangleSize), random.randint(-self.triangleSize, self.triangleSize))])
-
-
-    def randomPos(self):
-        x = random.randint(-self.worldWidth * 0.1, self.worldWidth * 0.1)
-        y = random.randint(-self.worldWidth * 0.1, self.worldWidth * 0.1)
-        return x, y
-
-
-    def moveObjRandomly(self, name):
-        randPos = self.randomPos()
-        xprotocol.move_entity(name, randPos[0], randPos[1], 0)
-
-
-    def randPosUpdate(self):
-        self.spawnRandTri()
-        for i in self.objects:
-            self.moveObjRandomly(i)
 
 
 class RandomPose(Updatable):
 
     def __init__(self, world_width, world_height):
         Updatable.__init__(self)
-        #Component.__init__(self)
-        self.width = world_width
-        self.height = world_height
+        self.width = world_width  # todo also used in network... save externally
+        self.height = world_height  # todo also used in network... save externally
 
     def activate(self):
         Updatable.activate(self)
-        self.parent.world_width = self.width
-        self.parent.world_height = self.height
-        self.parent.new_pose = self.new_pose
+        #self.parent.world_width = self.width
+        #self.parent.world_height = self.height
+        #self.parent.new_pose = self.new_pose
         self.parent.update = self.update
 
     def deactivate(self):
-        del self.parent.pos
-        del self.parent.angle
-        del self.parent.new_pose
+        #del self.parent.pos
+        #del self.parent.angle
+        #del self.parent.new_pose
+        self.parent.update = Updatable.update  # todo is this correct?
 
         Updatable.deactivate(self)
 
@@ -330,83 +280,51 @@ class RandomPose(Updatable):
         self.parent.angle += degree_per_sec * delta / 360 * math.pi * 2
 
     def update(self, delta):
-
-        # fixme shouldnt have to calculate by myself... should be forwarded: update(delta)
-        #delta = self.parent.timeline.elapsedtime - self.parent.elapsedTime
-        #self.parent.elapsedTime += delta
-
-        self.parent.new_pose(delta)
+        self.new_pose(delta)
         xprotocol.move_entity(self.parent.name,
                               self.parent.pos[0],
                               self.parent.pos[1],
                               self.parent.angle)
 
 
-# todo xprotocol spawn von der anderen klasse weg
-# todo noch nicht getestet
+# todo wip
+# todo not tested yet
+# todo use this class to call xprotocol.spawn
 class LifeCycle(Component):
-
     def __init__(self):
         Component.__init__(self)
 
     def activate(self):
         Component.activate(self)
-        GameManager.instance().spawn_entity(self.parent.uid,
-                               self.parent.pos[0],
-                               self.parent.pos[1],
-                               self.parent.angle,
-                               self.parent.vertices)
+        GameManager.spawn_entity(self.parent.uid,
+                                 self.parent.pos[0],
+                                 self.parent.pos[1],
+                                 self.parent.angle,
+                                 self.parent.vertices)
 
     def deactivate(self):
-        GameManager.instance().destroy_entity(self.parent.uid)
+        GameManager.destroy_entity(self.parent.uid)
         Component.deactivate(self)
 
-"""
-class TimeSource(Component):
-
-    instance = None
-
-    def __init__(self):
-        Component.__init__(self)
-
-    def activate(self):
-        Component.activate(self)
-        self.parent.elapsedtime = 0.0
-
-    def deactivate(self):
-        del self.parent.elapsedtime
-        Component.deactivate(self)
-
-    @staticmethod
-    def get_instance():
-        if not TimeSource.instance:
-            TimeSource.instance = TimeSource()
-        return TimeSource.instance
-
-    def elapse_time(self, delta):
-        self.parent.elapsedtime += delta
-        print self.parent.elapsedtime
-"""
 
 class Updater(Component):
-
     def __init__(self):
         Component.__init__(self)
 
     def activate(self):
         Component.activate(self)
         self.parent.updatables = []
-        self.parent.sendupdate = self.sendupdate
+        self.parent.send_update = self.send_update
         self.parent.add_updatable = self.add_updatable
 
     def deactivate(self):
         del self.parent.updatables
-        del self.parent.sendupdate
+        del self.parent.send_update
         del self.parent.add_updatable
 
         Component.deactivate(self)
 
-    def sendupdate(self, delta):
+    def send_update(self, delta):
         for u in self.parent.updatables:
             u.update(delta)
 
@@ -414,7 +332,7 @@ class Updater(Component):
         self.parent.updatables.append(updatable)
 
 
-class TimelineUpdater(Component):  # TimlineUpdatable? better name?
+class TimelineUpdatable(Component):
 
     def __init__(self):
         Component.__init__(self)

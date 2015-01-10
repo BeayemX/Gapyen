@@ -45,12 +45,12 @@ def deregister_tag(tag, entity):
 def register_timeline(timeline):
     timelines[timeline.name] = timeline
 
-def deregister_timeline(name):
+def deregister_timeline(name):  # todo make call possible via name or GO.
     del timelines[name]
 
 
-def register_shape(name, shape):
-    shapes[name] = shape
+def register_shape(shape):
+    shapes[shape.name] = shape
 
-def unregister_shape(name):
+def unregister_shape(name):  # todo make call possible via name or GO
     del shapes[name]

@@ -1,4 +1,6 @@
-# rename parent to gameobject
+# rename parent to gameobject?
+# todo id
+# todo test pausing timelines
 
 # TODO PONG
 """

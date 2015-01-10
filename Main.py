@@ -15,7 +15,7 @@ def main():
     t_slow.add(Name("Slow"))
     t_slow.add(Updater())
     t_slow.add(Timeline(60, 0.5))
-    t_slow.add(TimelineUpdater())
+    t_slow.add(TimelineUpdatable())
 
 
     GameManager.register_timeline(t_def)  # todo init swhere
@@ -32,7 +32,7 @@ def main():
     """
 
     network = Component()
-    network.add(NetworkWrapper("Default"))
+    network.add(NetworkWrapper(1))
 
     size = 5
     t = Component()
