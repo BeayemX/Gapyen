@@ -17,39 +17,27 @@ def main():
     t_slow.add(Timeline(60, 0.5))
     t_slow.add(TimelineUpdatable())
 
-
     GameManager.register_timeline(t_def)  # todo init swhere
     GameManager.register_timeline(t_slow)
 
     t_def.activate()
     t_slow.activate()
 
-    """
-    timesource = Component()
-    timesource.add(TimeSource.get_instance())
-    timesource.add(Name("Default"))
-    GameManager.register_timeline(timesource)
-    """
-
     network = Component()
     network.add(NetworkWrapper(1))
 
-    size = 5
-    t = Component()
-    t.add(Name("tri1"))
-    t.add(StaticTransform((0, 0, 0), 0))
-    t.add(Shape([[0, 0], [size, 0], [0, size/2]]))
-    t.add(RandomPose(100, 100))
-
-
-
     t_def.add_updatable(t_slow)
-
-    t_slow.add_updatable(t)
     t_slow.add_updatable(network)
 
+    for i in range(5):
+        size = 5
+        t = Component()
+        t.add(Name("tri"+str(i)))
+        t.add(StaticTransform((i * size * 2, 0, 0), 0))
+        t.add(Shape([[0, 0], [size, 0], [0, size/2]]))
+        t.add(RandomPose(100, 100))
 
-
+        t_slow.add_updatable(t)
 
     """
     size = 10

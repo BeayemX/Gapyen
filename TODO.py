@@ -1,3 +1,6 @@
+# todo go through main.py and put stuff into activate(). like register_timeline etc.
+# use component builder for more classes
+
 # rename parent to gameobject?
 # todo id
 # todo test pausing timelines
