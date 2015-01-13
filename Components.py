@@ -212,14 +212,15 @@ class NetworkWrapper(Updatable):
     def start_server(self):
         xprotocol.startup(self.numusers)
         print "started server()"
-        xprotocol.add_session_listener(self.connect)
+        #xprotocol.add_session_listener(self.connect)
+        xprotocol.add_connection_listener(self.connect)
         print "added listner"
 
     def stop_server(self):
         # TODO implement me. or already enough?
         xprotocol._stop_session()
 
-    def connect(self, started):
+    def connect(self, adress, started):
         if started:
             print "session started"
             self.adjust_view()

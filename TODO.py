@@ -4,8 +4,19 @@
 # rename parent to gameobject?
 # todo id
 # todo test pausing timelines
+# todo? network update rate?
+
 
 # TODO PONG
+
+# states
+"""
+IDLE
+PLAYING
+"""
+"""
+"""
+
 """
 ball
     id
@@ -13,7 +24,7 @@ ball
     body
     collision detection
     life cycle
-    postransmitter
+    pos_transmitter
     balllogic
 
 paddle
@@ -24,7 +35,7 @@ paddle
     collision
     netgamepad
     paddlelogic!! not reusable, just for paddle
-    postransmitter
+    pos_transmitter
 """
 
 

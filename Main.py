@@ -24,7 +24,7 @@ def main():
     t_slow.activate()
 
     network = Component()
-    network.add(NetworkWrapper(1))
+    network.add(NetworkWrapper(3))
 
     t_def.add_updatable(t_slow)
     t_slow.add_updatable(network)

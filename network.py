@@ -1,4 +1,4 @@
-# Network Module
+# Game Architecture Network Layer (ganet)
 #
 # Copyright (c) 2014 Roman Divotkey, Univ. of Applied Sciences Upper Austria. 
 # All rights reserved.
@@ -8,8 +8,6 @@
 #
 # THIS CODE IS PROVIDED AS EDUCATIONAL MATERIAL AND NOT INTENDED TO ADDRESS
 # ALL REAL WORLD PROBLEMS AND ISSUES IN DETAIL.
-
-__VERSION__ = '1.0.1'
 
 import socket, select
 
