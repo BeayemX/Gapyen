@@ -150,6 +150,8 @@ class Timeline(Component):
         self.parent.unpause = self.unpause
         self.parent.time_till_next_call = self.time_till_next_call
 
+        GameManager.register_timeline(self.parent)
+
     def deactivate(self):
         del self.parent.paused
         del self.parent.elapsedtime

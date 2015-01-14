@@ -8,13 +8,6 @@ def main():
 
     t_def = ComponentBuilder.build_timeline("Default", 60)
     t_slow = ComponentBuilder.build_timeline("Slow", 60, 0.5)
-    # raise Exception("Debug")
-
-    GameManager.register_timeline(t_def)  # todo init swhere
-    GameManager.register_timeline(t_slow)
-
-    # t_def.activate()
-    # t_slow.activate()
 
     network = Component()
     network.add(NetworkWrapper(3))

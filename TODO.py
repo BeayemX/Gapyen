@@ -44,7 +44,7 @@ paddle
 pausable, everybody can unpause
 """
 
-# todo uid
+# todo timeline reset()
 
 # todo OLD STUFF
 # todo game terminals working over network?
