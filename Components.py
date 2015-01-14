@@ -2,21 +2,26 @@ import xprotocol
 import math
 import GameManager
 import uuid
+import sys
+
+from vector import Vec2
 
 
 class Component:
     def __init__(self):
-        self.active = True
+        self.active = False
         self.parent = None
         self.children = []
 
         GameManager.register_entity(self)
-
+    """
     def __str__(self):
         return self.name
-
+    """
     def activate(self):
         self.active = True
+        if not self.parent:
+            GameManager.register_gameobject(self)
 
         for child in self.children:
             child.activate()
@@ -24,8 +29,11 @@ class Component:
     def deactivate(self):
         self.active = False
 
-        for child in self.children:
+        for child in reversed(self.children):
             child.deactivate()
+
+        if not self.parent:
+            GameManager.deregister_gameobject()
 
         GameManager.deregister_entity(self)
 
@@ -34,7 +42,8 @@ class Component:
             self.parent.remove(self)
 
         self.parent = parent
-        self.activate()
+        if parent.active:
+            self.activate()
 
     def add(self, component):
         if component.parent:
@@ -51,7 +60,7 @@ class StaticTransform(Component):
 
     def __init__(self, pos, angle):
         Component.__init__(self)
-        self.initPos = pos
+        self.initPos = Vec2(pos[0], pos[1])
         self.initAngle = angle
 
     def activate(self):
@@ -198,8 +207,10 @@ class Updatable(Component):
 
     def activate(self):
         Component.activate(self)
+        self.parent.update = self.update
 
     def deactivate(self):
+        del self.parent.update
         Component.deactivate(self)
 
     def update(self, delta):
@@ -240,11 +251,11 @@ class NetworkWrapper(Updatable):
 
     def connect(self, adress, started):
         if started:
-            print "session started"
+            print "user connected"
             self.adjust_view()
             self.spawn_objects()
         else:
-            print "session ended"
+            print "user disconnected"
 
     def spawn_objects(self):
         for key in GameManager.shapes:
@@ -265,6 +276,7 @@ class RandomPose(Updatable):
         Updatable.__init__(self)
         self.width = world_width  # todo also used in network... save externally
         self.height = world_height  # todo also used in network... save externally
+        self.delta_counter = 0
 
     def activate(self):
         Updatable.activate(self)
@@ -282,6 +294,8 @@ class RandomPose(Updatable):
         Updatable.deactivate(self)
 
     def new_pose(self, delta):
+        self.delta_counter += delta
+        y = math.sin(self.delta_counter) * 10
         """
         x = random.uniform(-self.width * 0.5, self.width * 0.5)
         y = random.uniform(-self.height * 0.5, self.height * 0.5)
@@ -290,8 +304,11 @@ class RandomPose(Updatable):
         self.parent.pos = [x, y]
         self.parent.angle = angle
         """
+        self.parent.pos.y = y
+        """
         degree_per_sec = 360
         self.parent.angle += degree_per_sec * delta / 360 * math.pi * 2
+        """
 
     def update(self, delta):
         self.new_pose(delta)
@@ -299,6 +316,8 @@ class RandomPose(Updatable):
                               self.parent.pos[0],
                               self.parent.pos[1],
                               self.parent.angle)
+        self.parent.calculate_AABB()
+        self.parent.is_colliding(GameManager.Find("tri1"))  # fixme supder duper ugly
 
 
 # todo wip
@@ -361,3 +380,97 @@ class TimelineUpdatable(Component):
 
     def update(self, delta):
         self.parent.elapse_time(delta)
+
+
+class AABB(Component):
+    def __init__(self):
+        Component.__init__(self)
+
+    def activate(self):
+        Component.activate(self)
+        self.parent.AABB = self.calculate_AABB()
+        self.parent.calculate_AABB = self.calculate_AABB
+        self.parent.is_colliding = self.is_colliding
+
+    def deactivate(self):
+        del self.parent.AABB
+        del self.parent.calculate_AABB
+        del self.parent.is_colliding
+        Component.deactivate(self)
+
+    def calculate_AABB(self):
+        minX = sys.maxint
+        minY = sys.maxint
+        maxX = -sys.maxint - 1
+        maxY = -sys.maxint - 1
+
+        # todo vertices should use vec2
+        for v in self.parent.vertices:
+            minX = min(minX, v[0])
+            minY = min(minY, v[1])
+            maxX = max(maxX, v[0])
+            maxY = max(maxY, v[1])
+
+        return Rectangle((minX+maxX)/2,
+                         (minY+maxY)/2,
+                         (maxX-minX)/2,
+                         (maxY-minY)/2)
+
+    def is_colliding(self, otherAABB):
+        if self.parent == otherAABB:
+            return False
+
+        a = self.parent.AABB + self.parent.pos
+        b = otherAABB.AABB + otherAABB.pos
+
+        if abs(a.center[0] - b.center[0]) > (a.radius[0] + b.radius[0]):
+            return False
+        if abs(a.center[1] - b.center[1]) > (a.radius[1] + b.radius[1]):
+            return False
+
+        return True
+
+
+class Rectangle:
+
+    # todo negative size?
+    def __init__(self, centerX, centerY, radiusX, radiusY):
+        self.radius = Vec2(radiusX, radiusY)
+        self.center = Vec2(centerX, centerY)
+
+    def __add__(self, other):
+        center = Vec2(self.center.x, self.center.y)
+        center.x += other.x
+        center.y += other.y
+        return Rectangle(center.x, center.y, self.radius.x, self.radius.y)
+
+    def __str__(self):
+        text = ""
+        text += "Center: "
+        text += str(self.center)
+        text += ", Radius: "
+        text += str(self.radius)
+        return text
+
+
+class Body(Component):
+
+    def __init__(self, mass=1, velocity=Vec2(0, 0)):
+        Component.__init__(self)
+        self.mass = mass
+        self.velocity = velocity
+
+    def activate(self):
+        Component.activate(self)
+
+        self.parent.mass = self.mass
+        self.parent.velocity = self.velocity
+
+        GameManager.register_body(self.parent)
+
+    def deactivate(self):
+        del self.parent.mass
+        del self.parent.velocity
+
+        GameManager.deregister_body(self.parent)
+        Component.deactivate(self)

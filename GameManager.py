@@ -1,4 +1,7 @@
 scopes = []
+bodies = []
+gameobjects = []  # todo not sure if necessary
+
 tags = {}
 shapes = {}
 timelines = {}
@@ -13,7 +16,7 @@ def register_entity(component):
 
 
 def deregister_entity(component):
-    component.deactivate()
+    #component.deactivate()
     # todo not sure if this works, what if componenet is not in the last scope?
     scopes[-1].remove(component)
 
@@ -26,6 +29,14 @@ def pop_scope():
     scope = scopes.pop()
     for component in scope:
         component.deactivate()
+
+
+def register_body(body):
+    bodies.append(body)
+
+
+def deregister_body(body):
+    bodies.remove(body)
 
 
 # todo not tested yet
@@ -57,3 +68,17 @@ def register_shape(shape):
 
 def deregister_shape(name):  # todo make call possible via name or GO
     del shapes[name]
+
+
+def Find(name):
+    for GO in gameobjects:
+        if GO.name == name:
+            return GO
+
+
+def register_gameobject(go):
+    gameobjects.append(go)
+
+
+def deregister_gameobject(go):
+    gameobjects.remove(go)

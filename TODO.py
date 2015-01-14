@@ -1,3 +1,12 @@
+# todo collision
+"""
+vertices value ignore rotation
+"""
+# todo when should components be activated? in constructor? method call? game manager?
+"""
+list for all physik obj to check collision against each other
+"""
+
 # todo go through main.py and put stuff into activate(). like register_timeline etc.
 # use component builder for more classes
 

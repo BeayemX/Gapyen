@@ -1,4 +1,4 @@
-from Components import Component
+from Components import *
 
 
 class PaddleLogic(Component):
