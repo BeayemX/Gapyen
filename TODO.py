@@ -2,7 +2,7 @@
 # use component builder for more classes
 
 # rename parent to gameobject?
-# todo id
+# todo use uid instead of name?
 # todo test pausing timelines
 # todo? network update rate?
 

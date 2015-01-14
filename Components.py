@@ -1,6 +1,7 @@
 import xprotocol
 import math
 import GameManager
+import uuid
 
 
 class Component:
@@ -94,6 +95,21 @@ class Tag(Component):
     def deactivate(self):
         GameManager.deregister_tag(self._tag, self.parent)
         del self.parent.tag
+        Component.deactivate(self)
+
+
+class UID(Component):
+
+    def __init__(self):
+        Component.__init__(self)
+        self.uid = uuid.uuid4()
+
+    def activate(self):
+        Component.activate(self)
+        self.parent.uid = self.uid
+
+    def deactivate(self):
+        del self.parent.uid
         Component.deactivate(self)
 
 
