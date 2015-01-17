@@ -10,7 +10,6 @@ list for all physik obj to check collision against each other
 # todo go through main.py and put stuff into activate(). like register_timeline etc.
 # use component builder for more classes
 
-# rename parent to gameobject?
 # todo use uid instead of name?
 # todo test pausing timelines
 # todo? network update rate?

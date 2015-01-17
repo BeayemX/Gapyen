@@ -10,8 +10,8 @@ from vector import Vec2
 class Component:
     def __init__(self):
         self.active = False
-        self.parent = None
-        self.children = []
+        self.gameobject = None
+        self.components = []
 
         GameManager.register_entity(self)
     """
@@ -20,40 +20,69 @@ class Component:
     """
     def activate(self):
         self.active = True
-        if not self.parent:
+        if not self.gameobject:
             GameManager.register_gameobject(self)
 
-        for child in self.children:
-            child.activate()
+        for component in self.components:
+            component.activate()
 
     def deactivate(self):
         self.active = False
 
-        for child in reversed(self.children):
-            child.deactivate()
+        for component in reversed(self.components):
+            component.deactivate()
 
-        if not self.parent:
+        if not self.gameobject:
             GameManager.deregister_gameobject()
 
         GameManager.deregister_entity(self)
 
-    def setparent(self, parent):
-        if self.parent:
-            self.parent.remove(self)
+    def setgameobject(self, gameobject):
+        if self.gameobject:
+            self.gameobject.remove(self)
 
-        self.parent = parent
-        if parent.active:
+        self.gameobject = gameobject
+        if gameobject.active:
             self.activate()
 
     def add(self, component):
-        if component.parent:
-            component.parent.remove(component)
+        if component.gameobject:
+            component.gameobject.remove(component)
 
-        self.children.append(component)
-        component.setparent(self)
+        self.components.append(component)
+        component.setgameobject(self)
 
-    def remove(self, child):
-        self.children.remove(child)
+    def remove(self, component):
+        self.components.remove(component)
+
+
+# TODO not tested yet
+# TODO if gameobject is moved, children have to be moved also!!!
+class Hierarchy(Component):
+
+    def __init__(self):
+        Component.__init__(self)
+        self.children = []
+
+    def activate(self):
+        Component.activate(self)
+
+        self.gameobject.children = self.children
+        self.gameobject.add_child = self.add_child
+        self.gameobject.remove_child = self.remove_child
+
+    def deactivate(self):
+        del self.gameobject.children
+        del self.gameobject.add_child
+        del self.gameobject.add_remove
+
+        Component.deactivate(self)
+
+    def add_child(self, child):
+        self.gameobject.children.append(child)
+
+    def remove_child(self, child):
+        self.gameobject.children.remove(child)
 
 
 class StaticTransform(Component):
@@ -65,12 +94,12 @@ class StaticTransform(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.pos = self.initPos
-        self.parent.angle = self.initAngle
+        self.gameobject.pos = self.initPos
+        self.gameobject.angle = self.initAngle
 
     def deactivate(self):
-        del self.parent.pos
-        del self.parent.angle
+        del self.gameobject.pos
+        del self.gameobject.angle
         Component.deactivate(self)
 
 
@@ -81,12 +110,12 @@ class Shape(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.vertices = self.vertices
-        GameManager.register_shape(self.parent)
+        self.gameobject.vertices = self.vertices
+        GameManager.register_shape(self.gameobject)
 
     def deactivate(self):
-        del self.parent.vertices
-        GameManager.deregister_shape(self.parent.name)
+        del self.gameobject.vertices
+        GameManager.deregister_shape(self.gameobject.name)
         Component.deactivate(self)
 
 
@@ -98,12 +127,12 @@ class Tag(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.tag = self._tag
-        GameManager.register_tag(self._tag, self.parent)
+        self.gameobject.tag = self._tag
+        GameManager.register_tag(self._tag, self.gameobject)
 
     def deactivate(self):
-        GameManager.deregister_tag(self._tag, self.parent)
-        del self.parent.tag
+        GameManager.deregister_tag(self._tag, self.gameobject)
+        del self.gameobject.tag
         Component.deactivate(self)
 
 
@@ -115,10 +144,10 @@ class UID(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.uid = self.uid
+        self.gameobject.uid = self.uid
 
     def deactivate(self):
-        del self.parent.uid
+        del self.gameobject.uid
         Component.deactivate(self)
 
 
@@ -130,10 +159,10 @@ class Name(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.name = self.name
+        self.gameobject.name = self.name
 
     def deactivate(self):
-        del self.parent.name
+        del self.gameobject.name
         Component.deactivate(self)
 
 
@@ -150,53 +179,53 @@ class Timeline(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.paused = self.paused
-        self.parent.elapsedtime = self.elapsedtime
-        self.parent.frequency = self.frequency
-        self.parent.timescale = self.timescale
-        self.parent.elapse_time = self.elapse_time
-        self.parent.pause = self.pause
-        self.parent.unpause = self.unpause
-        self.parent.time_till_next_call = self.time_till_next_call
+        self.gameobject.paused = self.paused
+        self.gameobject.elapsedtime = self.elapsedtime
+        self.gameobject.frequency = self.frequency
+        self.gameobject.timescale = self.timescale
+        self.gameobject.elapse_time = self.elapse_time
+        self.gameobject.pause = self.pause
+        self.gameobject.unpause = self.unpause
+        self.gameobject.time_till_next_call = self.time_till_next_call
 
-        GameManager.register_timeline(self.parent)
+        GameManager.register_timeline(self.gameobject)
 
     def deactivate(self):
-        del self.parent.paused
-        del self.parent.elapsedtime
-        del self.parent.frequency
-        del self.parent.timescale
-        del self.parent.elapse_time
-        del self.parent.pause
-        del self.parent.unpause
-        del self.parent.time_till_next_call
-        GameManager.deregister_timeline(self.parent.name)
+        del self.gameobject.paused
+        del self.gameobject.elapsedtime
+        del self.gameobject.frequency
+        del self.gameobject.timescale
+        del self.gameobject.elapse_time
+        del self.gameobject.pause
+        del self.gameobject.unpause
+        del self.gameobject.time_till_next_call
+        GameManager.deregister_timeline(self.gameobject.name)
 
     def pause(self):
-        self.parent.paused = True
+        self.gameobject.paused = True
 
     def unpause(self):
-        self.parent.paused = False
+        self.gameobject.paused = False
 
     def elapse_time(self, delta):
         if not self.paused:
-            self.parent.elapsedtime += delta * self.parent.timescale # todo not sure if correct / needed
+            self.gameobject.elapsedtime += delta * self.gameobject.timescale # todo not sure if correct / needed
 
-            self.timer += delta * self.parent.timescale
+            self.timer += delta * self.gameobject.timescale
             # print self.name + "elapsed time: " + str(self.elapsedtime)
 
-            if self.timer >= self.parent.frequency:
-                self.timer -= self.parent.frequency
+            if self.timer >= self.gameobject.frequency:
+                self.timer -= self.gameobject.frequency
                 self.notify()
 
     def notify(self):
-        send_delta = self.parent.elapsedtime - self.last_notify_timestamp
-        self.last_notify_timestamp = self.parent.elapsedtime
-        self.parent.send_update(send_delta)
+        send_delta = self.gameobject.elapsedtime - self.last_notify_timestamp
+        self.last_notify_timestamp = self.gameobject.elapsedtime
+        self.gameobject.send_update(send_delta)
 
     def time_till_next_call(self):
-        x = (self.parent.frequency - self.timer)
-        return max(0, x / self.parent.timescale)
+        x = (self.gameobject.frequency - self.timer)
+        return max(0, x / self.gameobject.timescale)
 
 
 # class not really needed... maybe remove?
@@ -207,10 +236,10 @@ class Updatable(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.update = self.update
+        self.gameobject.update = self.update
 
     def deactivate(self):
-        del self.parent.update
+        del self.gameobject.update
         Component.deactivate(self)
 
     def update(self, delta):
@@ -230,12 +259,12 @@ class NetworkWrapper(Updatable):
         Updatable.activate(self)
         self.start_server()
         self.adjust_view()
-        self.parent.update = self.update
+        self.gameobject.update = self.update
 
     def deactivate(self):
         self.stop_server()
-        # del self.parent.update
-        self.parent.update = Updatable.update  # todo is this correct?
+        # del self.gameobject.update
+        self.gameobject.update = Updatable.update  # todo is this correct?
         Updatable.deactivate(self)
 
     def start_server(self):
@@ -280,16 +309,16 @@ class RandomPose(Updatable):
 
     def activate(self):
         Updatable.activate(self)
-        #self.parent.world_width = self.width
-        #self.parent.world_height = self.height
-        #self.parent.new_pose = self.new_pose
-        self.parent.update = self.update
+        #self.gameobject.world_width = self.width
+        #self.gameobject.world_height = self.height
+        #self.gameobject.new_pose = self.new_pose
+        self.gameobject.update = self.update
 
     def deactivate(self):
-        #del self.parent.pos
-        #del self.parent.angle
-        #del self.parent.new_pose
-        self.parent.update = Updatable.update  # todo is this correct?
+        #del self.gameobject.pos
+        #del self.gameobject.angle
+        #del self.gameobject.new_pose
+        self.gameobject.update = Updatable.update  # todo is this correct?
 
         Updatable.deactivate(self)
 
@@ -301,23 +330,23 @@ class RandomPose(Updatable):
         y = random.uniform(-self.height * 0.5, self.height * 0.5)
         angle = random.uniform(0, 2 * math.pi)
 
-        self.parent.pos = [x, y]
-        self.parent.angle = angle
+        self.gameobject.pos = [x, y]
+        self.gameobject.angle = angle
         """
-        self.parent.pos.y = y
+        self.gameobject.pos.y = y
         """
         degree_per_sec = 360
-        self.parent.angle += degree_per_sec * delta / 360 * math.pi * 2
+        self.gameobject.angle += degree_per_sec * delta / 360 * math.pi * 2
         """
 
     def update(self, delta):
         self.new_pose(delta)
-        xprotocol.move_entity(self.parent.name,
-                              self.parent.pos[0],
-                              self.parent.pos[1],
-                              self.parent.angle)
-        self.parent.calculate_AABB()
-        self.parent.is_colliding(GameManager.Find("tri1"))  # fixme supder duper ugly
+        xprotocol.move_entity(self.gameobject.name,
+                              self.gameobject.pos[0],
+                              self.gameobject.pos[1],
+                              self.gameobject.angle)
+        self.gameobject.calculate_AABB()
+        self.gameobject.is_colliding(GameManager.Find("tri1"))  # fixme supder duper ugly
 
 
 # todo wip
@@ -329,14 +358,14 @@ class LifeCycle(Component):
 
     def activate(self):
         Component.activate(self)
-        GameManager.spawn_entity(self.parent.uid,
-                                 self.parent.pos[0],
-                                 self.parent.pos[1],
-                                 self.parent.angle,
-                                 self.parent.vertices)
+        GameManager.spawn_entity(self.gameobject.uid,
+                                 self.gameobject.pos[0],
+                                 self.gameobject.pos[1],
+                                 self.gameobject.angle,
+                                 self.gameobject.vertices)
 
     def deactivate(self):
-        GameManager.destroy_entity(self.parent.uid)
+        GameManager.destroy_entity(self.gameobject.uid)
         Component.deactivate(self)
 
 
@@ -346,23 +375,23 @@ class Updater(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.updatables = []
-        self.parent.send_update = self.send_update
-        self.parent.add_updatable = self.add_updatable
+        self.gameobject.updatables = []
+        self.gameobject.send_update = self.send_update
+        self.gameobject.add_updatable = self.add_updatable
 
     def deactivate(self):
-        del self.parent.updatables
-        del self.parent.send_update
-        del self.parent.add_updatable
+        del self.gameobject.updatables
+        del self.gameobject.send_update
+        del self.gameobject.add_updatable
 
         Component.deactivate(self)
 
     def send_update(self, delta):
-        for u in self.parent.updatables:
+        for u in self.gameobject.updatables:
             u.update(delta)
 
     def add_updatable(self, updatable):
-        self.parent.updatables.append(updatable)
+        self.gameobject.updatables.append(updatable)
 
 
 class TimelineUpdatable(Component):
@@ -372,14 +401,14 @@ class TimelineUpdatable(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.update = self.update
+        self.gameobject.update = self.update
 
     def deactivate(self):
-        del self.parent.update
+        del self.gameobject.update
         Component.deactivate(self)
 
     def update(self, delta):
-        self.parent.elapse_time(delta)
+        self.gameobject.elapse_time(delta)
 
 
 class AABB(Component):
@@ -388,14 +417,14 @@ class AABB(Component):
 
     def activate(self):
         Component.activate(self)
-        self.parent.AABB = self.calculate_AABB()
-        self.parent.calculate_AABB = self.calculate_AABB
-        self.parent.is_colliding = self.is_colliding
+        self.gameobject.AABB = self.calculate_AABB()
+        self.gameobject.calculate_AABB = self.calculate_AABB
+        self.gameobject.is_colliding = self.is_colliding
 
     def deactivate(self):
-        del self.parent.AABB
-        del self.parent.calculate_AABB
-        del self.parent.is_colliding
+        del self.gameobject.AABB
+        del self.gameobject.calculate_AABB
+        del self.gameobject.is_colliding
         Component.deactivate(self)
 
     def calculate_AABB(self):
@@ -405,7 +434,7 @@ class AABB(Component):
         maxY = -sys.maxint - 1
 
         # todo vertices should use vec2
-        for v in self.parent.vertices:
+        for v in self.gameobject.vertices:
             minX = min(minX, v[0])
             minY = min(minY, v[1])
             maxX = max(maxX, v[0])
@@ -417,10 +446,10 @@ class AABB(Component):
                          (maxY-minY)/2)
 
     def is_colliding(self, otherAABB):
-        if self.parent == otherAABB:
+        if self.gameobject == otherAABB:
             return False
 
-        a = self.parent.AABB + self.parent.pos
+        a = self.gameobject.AABB + self.gameobject.pos
         b = otherAABB.AABB + otherAABB.pos
 
         if abs(a.center[0] - b.center[0]) > (a.radius[0] + b.radius[0]):
@@ -463,14 +492,14 @@ class Body(Component):
     def activate(self):
         Component.activate(self)
 
-        self.parent.mass = self.mass
-        self.parent.velocity = self.velocity
+        self.gameobject.mass = self.mass
+        self.gameobject.velocity = self.velocity
 
-        GameManager.register_body(self.parent)
+        GameManager.register_body(self.gameobject)
 
     def deactivate(self):
-        del self.parent.mass
-        del self.parent.velocity
+        del self.gameobject.mass
+        del self.gameobject.velocity
 
-        GameManager.deregister_body(self.parent)
+        GameManager.deregister_body(self.gameobject)
         Component.deactivate(self)
