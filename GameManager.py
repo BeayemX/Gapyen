@@ -1,5 +1,6 @@
 scopes = []
 bodies = []
+colliders = []
 gameobjects = []  # todo not sure if necessary
 
 tags = {}
@@ -37,6 +38,13 @@ def register_body(body):
 
 def deregister_body(body):
     bodies.remove(body)
+
+def register_collider(collider):
+    colliders.append(collider)
+
+
+def deregister_collider(collider):
+    colliders.remove(collider)
 
 
 # todo not tested yet

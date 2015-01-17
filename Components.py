@@ -1,8 +1,11 @@
-import xprotocol
 import math
-import GameManager
 import uuid
 import sys
+
+import xprotocol
+import GameManager
+import InputController
+
 
 from vector import Vec2
 
@@ -85,9 +88,9 @@ class Hierarchy(Component):
         self.gameobject.children.remove(child)
 
 
-class StaticTransform(Component):
+class Transform(Component):
 
-    def __init__(self, pos, angle):
+    def __init__(self, pos=Vec2(0, 0), angle=0):
         Component.__init__(self)
         self.initPos = Vec2(pos[0], pos[1])
         self.initAngle = angle
@@ -96,11 +99,45 @@ class StaticTransform(Component):
         Component.activate(self)
         self.gameobject.pos = self.initPos
         self.gameobject.angle = self.initAngle
+        self.gameobject.move_by = self.move_by
+        self.gameobject.move_to = self.move_to
+        self.gameobject.rotate_by = self.rotate_by
+        self.gameobject.rotate_to = self.rotate_to
 
     def deactivate(self):
         del self.gameobject.pos
         del self.gameobject.angle
+        del self.gameobject.move_by
+        del self.gameobject.move_to
+        del self.gameobject.rotate_by
+        del self.gameobject.rotate_to
         Component.deactivate(self)
+
+    def move_by(self, delta):
+
+        self.gameobject.pos += delta #Vec2(self.gameobject.pos.x + delta.x, self.gameobject.pos.y + delta.y)
+        self.update_network_pos()
+
+    # todo rename to set_pos?
+    def move_to(self, x, y):
+        self.gameobject.pos = Vec2(self.gameobject.pos.x + x, self.gameobject.pos.y + y)
+        self.update_network_pos()
+
+    def rotate_by(self, deltaangle):
+        self.gameobject.angle = self.gameobject.angle + deltaangle
+        self.update_network_pos()
+
+    # todo rename to set_angle?
+    def rotate_to(self, angle):
+        self.gameobject.angle = angle
+        self.update_network_pos()
+
+    # used 2 times. make component?
+    def update_network_pos(self):
+        xprotocol.move_entity(self.gameobject.name,
+                              self.gameobject.pos[0],
+                              self.gameobject.pos[1],
+                              self.gameobject.angle)
 
 
 class Shape(Component):
@@ -228,10 +265,9 @@ class Timeline(Component):
         return max(0, x / self.gameobject.timescale)
 
 
-# class not really needed... maybe remove?
 class Updatable(Component):
 
-    def __init__(self, updatesPerSec=1, timelinename="Default"):
+    def __init__(self):
         Component.__init__(self)
 
     def activate(self):
@@ -267,12 +303,19 @@ class NetworkWrapper(Updatable):
         self.gameobject.update = Updatable.update  # todo is this correct?
         Updatable.deactivate(self)
 
+    def update(self, delta):
+        Updatable.update(self, delta)
+        xprotocol.update()
+
     def start_server(self):
         xprotocol.startup(self.numusers)
         print "started server()"
         #xprotocol.add_session_listener(self.connect)
         xprotocol.add_connection_listener(self.connect)
         print "added listner"
+
+        xprotocol.add_button_listener(self.button_listener)
+        xprotocol.add_axis_listener(self.axis_listener)
 
     def stop_server(self):
         # TODO implement me. or already enough?
@@ -291,12 +334,16 @@ class NetworkWrapper(Updatable):
             shape = GameManager.shapes[key]
             xprotocol.spawn_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle, shape.vertices)
 
-    def update(self, delta):
-        xprotocol.update()
-
     def adjust_view(self):
         xprotocol.set_world_width(self.worldWidth)
         xprotocol.update()
+
+    def button_listener(self, button):
+        print button
+
+    def axis_listener(self, address, axis, value):
+        print address, axis, value
+        InputController.move_paddle(axis, value)
 
 
 class RandomPose(Updatable):
@@ -340,13 +387,13 @@ class RandomPose(Updatable):
         """
 
     def update(self, delta):
+        Updatable.update(self, delta)
         self.new_pose(delta)
         xprotocol.move_entity(self.gameobject.name,
                               self.gameobject.pos[0],
                               self.gameobject.pos[1],
                               self.gameobject.angle)
-        self.gameobject.calculate_AABB()
-        self.gameobject.is_colliding(GameManager.Find("tri1"))  # fixme supder duper ugly
+        #self.gameobject.calculate_aabb()  # should already be done by physics timeline...
 
 
 # todo wip
@@ -394,78 +441,83 @@ class Updater(Component):
         self.gameobject.updatables.append(updatable)
 
 
-class TimelineUpdatable(Component):
+class TimelineUpdatable(Updatable):
 
     def __init__(self):
-        Component.__init__(self)
+        Updatable.__init__(self)
 
     def activate(self):
-        Component.activate(self)
+        Updatable.activate(self)
         self.gameobject.update = self.update
 
     def deactivate(self):
-        del self.gameobject.update
-        Component.deactivate(self)
+        self.gameobject.update = Updatable.update
+        Updatable.deactivate(self)
 
     def update(self, delta):
+        Updatable.update(self, delta)
         self.gameobject.elapse_time(delta)
 
-
+# todo make collider componenet and inherit
 class AABB(Component):
     def __init__(self):
         Component.__init__(self)
 
     def activate(self):
         Component.activate(self)
-        self.gameobject.AABB = self.calculate_AABB()
-        self.gameobject.calculate_AABB = self.calculate_AABB
+        GameManager.register_collider(self.gameobject)
+        self.gameobject.aabb = self.calculate_aabb()
+        self.gameobject.calculate_aabb = self.calculate_aabb
         self.gameobject.is_colliding = self.is_colliding
 
     def deactivate(self):
         del self.gameobject.AABB
-        del self.gameobject.calculate_AABB
+        del self.gameobject.calculate_aabb
         del self.gameobject.is_colliding
+
+        GameManager.deregister_collider(self.gameobject)
         Component.deactivate(self)
 
-    def calculate_AABB(self):
-        minX = sys.maxint
-        minY = sys.maxint
-        maxX = -sys.maxint - 1
-        maxY = -sys.maxint - 1
+    def calculate_aabb(self):
+        minx = sys.maxint
+        miny = sys.maxint
+        maxx = -sys.maxint - 1
+        maxy = -sys.maxint - 1
 
         # todo vertices should use vec2
         for v in self.gameobject.vertices:
-            minX = min(minX, v[0])
-            minY = min(minY, v[1])
-            maxX = max(maxX, v[0])
-            maxY = max(maxY, v[1])
+            minx = min(minx, v[0])
+            miny = min(miny, v[1])
+            maxx = max(maxx, v[0])
+            maxy = max(maxy, v[1])
 
-        return Rectangle((minX+maxX)/2,
-                         (minY+maxY)/2,
-                         (maxX-minX)/2,
-                         (maxY-minY)/2)
+        return Rectangle((minx+maxx)/2,
+                         (miny+maxy)/2,
+                         (maxx-minx)/2,
+                         (maxy-miny)/2)
 
-    def is_colliding(self, otherAABB):
-        if self.gameobject == otherAABB:
+    def is_colliding(self, other):
+        # todo better check?
+        if self.gameobject == other:
             return False
 
-        a = self.gameobject.AABB + self.gameobject.pos
-        b = otherAABB.AABB + otherAABB.pos
+        a = self.gameobject.aabb + self.gameobject.pos
+        b = other.aabb + other.pos
 
         if abs(a.center[0] - b.center[0]) > (a.radius[0] + b.radius[0]):
             return False
         if abs(a.center[1] - b.center[1]) > (a.radius[1] + b.radius[1]):
             return False
-
         return True
 
 
+# todo move class because its not a componenet
 class Rectangle:
 
     # todo negative size?
-    def __init__(self, centerX, centerY, radiusX, radiusY):
-        self.radius = Vec2(radiusX, radiusY)
-        self.center = Vec2(centerX, centerY)
+    def __init__(self, center_x, center_y, radius_x, radius_y):
+        self.radius = Vec2(radius_x, radius_y)
+        self.center = Vec2(center_x, center_y)
 
     def __add__(self, other):
         center = Vec2(self.center.x, self.center.y)
@@ -484,10 +536,10 @@ class Rectangle:
 
 class Body(Component):
 
-    def __init__(self, mass=1, velocity=Vec2(0, 0)):
+    def __init__(self, velocity=Vec2(0, 0), mass=1):
         Component.__init__(self)
-        self.mass = mass
         self.velocity = velocity
+        self.mass = mass
 
     def activate(self):
         Component.activate(self)
@@ -503,3 +555,52 @@ class Body(Component):
 
         GameManager.deregister_body(self.gameobject)
         Component.deactivate(self)
+
+
+class PhysicsController(Updatable):
+
+    def __init__(self):
+        Updatable.__init__(self)
+
+    def activate(self):
+        Updatable.activate(self)
+        self.gameobject.update = self.update
+
+    def deactivate(self):
+        self.gameobject.update = Updatable.update
+        Updatable.deactivate(self)
+
+    def update(self, delta):
+        Updatable.update(self, delta)
+        self.move_bodies(delta)
+        self.check_collisions()
+
+    def check_collisions(self):
+        for collider1 in GameManager.colliders:
+            for collider2 in GameManager.colliders:
+                if collider1 != collider2:
+                    if collider1.is_colliding(collider2):
+                        # TODO also call for collider2? because what if handling oves collider1 out of collider2?
+                        collider1.handle_collision(collider2)
+
+    def move_bodies(self, delta):
+        for body in GameManager.bodies:
+            body.move_by(body.velocity * delta)
+
+
+
+class CollisionHandler(Component):
+    def __init__(self):
+        Component.__init__(self)
+
+    def activate(self):
+        Component.activate(self)
+        self.gameobject.handle_collision = self.handle_collision
+
+    def deactivate(self):
+        del self.gameobject.handle_collision
+        Component.deactivate(self)
+
+    def handle_collision(self, other):
+        # TODO move body out of collision? parent-CollisionHandler so alle children do it?
+        pass
