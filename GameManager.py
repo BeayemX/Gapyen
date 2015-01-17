@@ -2,9 +2,9 @@ scopes = []
 bodies = []
 colliders = []
 gameobjects = []  # todo not sure if necessary
+shapes = []
 
 tags = {}
-shapes = {}
 timelines = {}
 
 
@@ -71,11 +71,13 @@ def deregister_timeline(name):  # todo make call possible via name or GO.
 
 
 def register_shape(shape):
-    shapes[shape.name] = shape
+    #shapes[shape.name] = shape
+    shapes.append(shape)
 
 
-def deregister_shape(name):  # todo make call possible via name or GO
-    del shapes[name]
+def deregister_shape(shape):  # todo make call possible via name or GO
+    shapes.remove(shape)
+    #del shapes[name]
 
 
 def Find(name):

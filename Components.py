@@ -137,7 +137,7 @@ class Shape(Component):
 
     def deactivate(self):
         del self.gameobject.vertices
-        GameManager.deregister_shape(self.gameobject.name)
+        GameManager.deregister_shape(self.gameobject)
         Component.deactivate(self)
 
 
@@ -315,8 +315,7 @@ class NetworkWrapper(Updatable):
             print "user disconnected"
 
     def spawn_objects(self):
-        for key in GameManager.shapes:
-            shape = GameManager.shapes[key]
+        for shape in GameManager.shapes:
             xprotocol.spawn_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle, shape.vertices)
 
     def adjust_view(self):
@@ -331,8 +330,7 @@ class NetworkWrapper(Updatable):
 
     def update_entity_transforms(self):
         # todo use list instead of dict for shapes?
-        for key in GameManager.shapes:
-            shape = GameManager.shapes[key]
+        for shape in GameManager.shapes:
             xprotocol.move_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle)
 
 
