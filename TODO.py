@@ -14,7 +14,6 @@ component.activate() somehow more practical?
 
 # todo use uid instead of name?
 # todo test pausing timelines
-# todo? network update rate?
 # todo should updatable have elapsed time? i.e. if entity is spawned later in game...?
 # if so.... use Updatable[base class] to increase time and call Updatable.update() in inheritetd classes
 

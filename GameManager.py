@@ -71,16 +71,14 @@ def deregister_timeline(name):  # todo make call possible via name or GO.
 
 
 def register_shape(shape):
-    #shapes[shape.name] = shape
     shapes.append(shape)
 
 
-def deregister_shape(shape):  # todo make call possible via name or GO
+def deregister_shape(shape):
     shapes.remove(shape)
-    #del shapes[name]
 
 
-def Find(name):
+def find(name):
     for GO in gameobjects:
         if GO.name == name:
             return GO
