@@ -10,7 +10,7 @@ def main():
 
     # create timelines
     t_def = ComponentBuilder.build_timeline("Default", 60)
-    t_slow = ComponentBuilder.build_timeline("Slow", 60, 0.5)
+    t_slow = ComponentBuilder.build_timeline("Network", 5)
     time_physics = ComponentBuilder.build_timeline("Physics", 60)
 
     # create controller

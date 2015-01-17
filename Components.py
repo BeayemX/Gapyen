@@ -111,30 +111,18 @@ class Transform(Component):
         Component.deactivate(self)
 
     def move_by(self, delta):
-
         self.gameobject.pos += delta #Vec2(self.gameobject.pos.x + delta.x, self.gameobject.pos.y + delta.y)
-        self.update_network_pos()
 
     # todo rename to set_pos?
     def move_to(self, x, y):
         self.gameobject.pos = Vec2(self.gameobject.pos.x + x, self.gameobject.pos.y + y)
-        self.update_network_pos()
 
     def rotate_by(self, deltaangle):
         self.gameobject.angle = self.gameobject.angle + deltaangle
-        self.update_network_pos()
 
     # todo rename to set_angle?
     def rotate_to(self, angle):
         self.gameobject.angle = angle
-        self.update_network_pos()
-
-    # used 2 times. make component?
-    def update_network_pos(self):
-        xprotocol.move_entity(self.gameobject.name,
-                              self.gameobject.pos[0],
-                              self.gameobject.pos[1],
-                              self.gameobject.angle)
 
 
 class Shape(Component):
@@ -301,6 +289,7 @@ class NetworkWrapper(Updatable):
 
     def update(self, delta):
         Updatable.update(self, delta)
+        self.update_entity_transforms()  # TODO better name
         xprotocol.update()
 
     def start_server(self):
@@ -332,7 +321,6 @@ class NetworkWrapper(Updatable):
 
     def adjust_view(self):
         xprotocol.set_world_width(self.worldWidth)
-        xprotocol.update()
 
     def button_listener(self, button):
         print button
@@ -340,6 +328,12 @@ class NetworkWrapper(Updatable):
     def axis_listener(self, address, axis, value):
         print address, axis, value
         InputController.move_paddle(axis, value)
+
+    def update_entity_transforms(self):
+        # todo use list instead of dict for shapes?
+        for key in GameManager.shapes:
+            shape = GameManager.shapes[key]
+            xprotocol.move_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle)
 
 
 class RandomPose(Updatable):
@@ -359,10 +353,6 @@ class RandomPose(Updatable):
     def update(self, delta):
         Updatable.update(self, delta)
         self.new_pose(delta)
-        xprotocol.move_entity(self.gameobject.name,
-                              self.gameobject.pos[0],
-                              self.gameobject.pos[1],
-                              self.gameobject.angle)
 
     def new_pose(self, delta):
         self.delta_counter += delta

@@ -1,3 +1,9 @@
+# todo now
+"""
+timeline adding more practical
+component.activate() somehow more practical?
+"""
+
 # todo [collision] vertices value ignore rotation
 
 # todo when should components be activated? in constructor? method call? game manager?
