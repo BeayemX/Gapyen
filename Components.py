@@ -6,7 +6,6 @@ import xprotocol
 import GameManager
 import InputController
 
-
 from vector import Vec2
 
 
@@ -16,11 +15,9 @@ class Component:
         self.gameobject = None
         self.components = []
 
+        # todo do i need this? every (sub) component inside scope?
         GameManager.register_entity(self)
-    """
-    def __str__(self):
-        return self.name
-    """
+
     def activate(self):
         self.active = True
         if not self.gameobject:
@@ -156,6 +153,7 @@ class Shape(Component):
         Component.deactivate(self)
 
 
+# object should be able to have multiple tags
 class Tag(Component):
 
     def __init__(self, tag):
@@ -203,6 +201,7 @@ class Name(Component):
         Component.deactivate(self)
 
 
+# todo make ElapsedTime-Component and inherit?
 class Timeline(Component):
 
     def __init__(self, updates_per_sec, timescale=1.0, paused=False):
@@ -281,7 +280,6 @@ class Updatable(Component):
     def update(self, delta):
         pass
 
-
 class NetworkWrapper(Updatable):
 
     def __init__(self, numusers):
@@ -295,12 +293,10 @@ class NetworkWrapper(Updatable):
         Updatable.activate(self)
         self.start_server()
         self.adjust_view()
-        self.gameobject.update = self.update
 
     def deactivate(self):
         self.stop_server()
         # del self.gameobject.update
-        self.gameobject.update = Updatable.update  # todo is this correct?
         Updatable.deactivate(self)
 
     def update(self, delta):
@@ -356,35 +352,9 @@ class RandomPose(Updatable):
 
     def activate(self):
         Updatable.activate(self)
-        #self.gameobject.world_width = self.width
-        #self.gameobject.world_height = self.height
-        #self.gameobject.new_pose = self.new_pose
-        self.gameobject.update = self.update
 
     def deactivate(self):
-        #del self.gameobject.pos
-        #del self.gameobject.angle
-        #del self.gameobject.new_pose
-        self.gameobject.update = Updatable.update  # todo is this correct?
-
         Updatable.deactivate(self)
-
-    def new_pose(self, delta):
-        self.delta_counter += delta
-        y = math.sin(self.delta_counter) * 10
-        """
-        x = random.uniform(-self.width * 0.5, self.width * 0.5)
-        y = random.uniform(-self.height * 0.5, self.height * 0.5)
-        angle = random.uniform(0, 2 * math.pi)
-
-        self.gameobject.pos = [x, y]
-        self.gameobject.angle = angle
-        """
-        self.gameobject.pos.y = y
-        """
-        degree_per_sec = 360
-        self.gameobject.angle += degree_per_sec * delta / 360 * math.pi * 2
-        """
 
     def update(self, delta):
         Updatable.update(self, delta)
@@ -393,7 +363,11 @@ class RandomPose(Updatable):
                               self.gameobject.pos[0],
                               self.gameobject.pos[1],
                               self.gameobject.angle)
-        #self.gameobject.calculate_aabb()  # should already be done by physics timeline...
+
+    def new_pose(self, delta):
+        self.delta_counter += delta
+        y = math.sin(self.delta_counter) * 10
+        self.gameobject.pos.y = y
 
 
 # todo wip
@@ -448,17 +422,16 @@ class TimelineUpdatable(Updatable):
 
     def activate(self):
         Updatable.activate(self)
-        self.gameobject.update = self.update
 
     def deactivate(self):
-        self.gameobject.update = Updatable.update
         Updatable.deactivate(self)
 
     def update(self, delta):
         Updatable.update(self, delta)
         self.gameobject.elapse_time(delta)
 
-# todo make collider componenet and inherit
+
+# todo make a collider componenet and inherit
 class AABB(Component):
     def __init__(self):
         Component.__init__(self)
@@ -564,10 +537,8 @@ class PhysicsController(Updatable):
 
     def activate(self):
         Updatable.activate(self)
-        self.gameobject.update = self.update
 
     def deactivate(self):
-        self.gameobject.update = Updatable.update
         Updatable.deactivate(self)
 
     def update(self, delta):
@@ -586,7 +557,6 @@ class PhysicsController(Updatable):
     def move_bodies(self, delta):
         for body in GameManager.bodies:
             body.move_by(body.velocity * delta)
-
 
 
 class CollisionHandler(Component):

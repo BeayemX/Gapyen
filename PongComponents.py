@@ -38,7 +38,7 @@ class PaddleLogic(CollisionHandler, Updatable):
         Updatable.deactivate(self)
 
     def update(self, delta):
-        print delta
+        Updatable.update(self, delta)
 
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
@@ -52,9 +52,6 @@ class BallLogic(CollisionHandler, Updatable):
     def activate(self):
         CollisionHandler.activate(self)
         Updatable.activate(self)
-
-        self.gameobject.handle_collision = self.handle_collision
-        self.gameobject.update = self.update
 
     def deactivate(self):
         self.gameobject.handle_collision = CollisionHandler.handle_collision
