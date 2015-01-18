@@ -19,7 +19,7 @@ def main():
     physics_controller.add(PhysicsController())
     physics_controller.activate()
     # fixme shouldnt add updatable to timeline. should call updatable.usetimeline("aasdf")
-    time_physics.add_updatable(physics_controller)
+    time_physics.register_updatable(physics_controller)
 
 
     # network controller
@@ -30,9 +30,9 @@ def main():
 
     # add stuff to timelines
     # fixme super annoying to add all timelines to default timeline manually
-    t_def.add_updatable(t_slow)
-    t_def.add_updatable(time_physics)
-    t_slow.add_updatable(network)
+    t_def.register_updatable(t_slow)
+    t_def.register_updatable(time_physics)
+    t_slow.register_updatable(network)
 
     # create objects
     ball = PongComponents.build_ball()
@@ -42,9 +42,9 @@ def main():
     paddle1 = PongComponents.build_paddle("paddle1")
     paddle1.pos.x = 40
 
-    t_def.add_updatable(ball)
-    t_def.add_updatable(paddle0)
-    t_def.add_updatable(paddle1)
+    t_def.register_updatable(ball)
+    t_def.register_updatable(paddle0)
+    t_def.register_updatable(paddle1)
 
     # start game
     UpdaterManager.start_loop()

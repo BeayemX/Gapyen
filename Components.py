@@ -189,70 +189,23 @@ class Name(Component):
         Component.deactivate(self)
 
 
-# todo make ElapsedTime-Component and inherit?
-class Timeline(Component):
-
-    def __init__(self, updates_per_sec, timescale=1.0, paused=False):
+class Updatable(Component):
+    def __init__(self):
         Component.__init__(self)
-        self.paused = paused
-        self.elapsedtime = 0.0
-        self.timescale = timescale
-        self.frequency = 1.0 / updates_per_sec  # todo is frequency correct?
-        self.timer = 0.0
-        self.last_notify_timestamp = 0.0
 
     def activate(self):
         Component.activate(self)
-        self.gameobject.paused = self.paused
-        self.gameobject.elapsedtime = self.elapsedtime
-        self.gameobject.frequency = self.frequency
-        self.gameobject.timescale = self.timescale
-        self.gameobject.elapse_time = self.elapse_time
-        self.gameobject.pause = self.pause
-        self.gameobject.unpause = self.unpause
-        self.gameobject.time_till_next_call = self.time_till_next_call
-
-        GameManager.register_timeline(self.gameobject)
+        self.gameobject.update = self.update
 
     def deactivate(self):
-        del self.gameobject.paused
-        del self.gameobject.elapsedtime
-        del self.gameobject.frequency
-        del self.gameobject.timescale
-        del self.gameobject.elapse_time
-        del self.gameobject.pause
-        del self.gameobject.unpause
-        del self.gameobject.time_till_next_call
-        GameManager.deregister_timeline(self.gameobject.name)
+        del self.gameobject.update
+        Component.deactivate(self)
 
-    def pause(self):
-        self.gameobject.paused = True
-
-    def unpause(self):
-        self.gameobject.paused = False
-
-    def elapse_time(self, delta):
-        if not self.paused:
-            self.gameobject.elapsedtime += delta * self.gameobject.timescale # todo not sure if correct / needed
-
-            self.timer += delta * self.gameobject.timescale
-            # print self.name + "elapsed time: " + str(self.elapsedtime)
-
-            if self.timer >= self.gameobject.frequency:
-                self.timer -= self.gameobject.frequency
-                self.notify()
-
-    def notify(self):
-        send_delta = self.gameobject.elapsedtime - self.last_notify_timestamp
-        self.last_notify_timestamp = self.gameobject.elapsedtime
-        self.gameobject.send_update(send_delta)
-
-    def time_till_next_call(self):
-        x = (self.gameobject.frequency - self.timer)
-        return max(0, x / self.gameobject.timescale)
+    def update(self):
+        pass
 
 
-class Updatable(Component):
+class TimeUpdatable(Component):
 
     def __init__(self):
         Component.__init__(self)
@@ -268,27 +221,27 @@ class Updatable(Component):
     def update(self, delta):
         pass
 
-class NetworkWrapper(Updatable):
+class NetworkWrapper(TimeUpdatable):
 
     def __init__(self, numusers):
-        Updatable.__init__(self)
+        TimeUpdatable.__init__(self)
         self.worldWidth = 100  # todo save externally?
         self.triangleSize = 100  # todo save externally
         self.objects = []
         self.numusers = numusers
 
     def activate(self):
-        Updatable.activate(self)
+        TimeUpdatable.activate(self)
         self.start_server()
         self.adjust_view()
 
     def deactivate(self):
         self.stop_server()
         # del self.gameobject.update
-        Updatable.deactivate(self)
+        TimeUpdatable.deactivate(self)
 
     def update(self, delta):
-        Updatable.update(self, delta)
+        TimeUpdatable.update(self, delta)
         self.update_entity_transforms()  # TODO better name
         xprotocol.update()
 
@@ -334,22 +287,22 @@ class NetworkWrapper(Updatable):
             xprotocol.move_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle)
 
 
-class RandomPose(Updatable):
+class RandomPose(TimeUpdatable):
 
     def __init__(self, world_width, world_height):
-        Updatable.__init__(self)
+        TimeUpdatable.__init__(self)
         self.width = world_width  # todo also used in network... save externally
         self.height = world_height  # todo also used in network... save externally
         self.delta_counter = 0
 
     def activate(self):
-        Updatable.activate(self)
+        TimeUpdatable.activate(self)
 
     def deactivate(self):
-        Updatable.deactivate(self)
+        TimeUpdatable.deactivate(self)
 
     def update(self, delta):
-        Updatable.update(self, delta)
+        TimeUpdatable.update(self, delta)
         self.new_pose(delta)
 
     def new_pose(self, delta):
@@ -385,39 +338,109 @@ class Updater(Component):
     def activate(self):
         Component.activate(self)
         self.gameobject.updatables = []
-        self.gameobject.send_update = self.send_update
-        self.gameobject.add_updatable = self.add_updatable
+        self.gameobject.register_updatable = self.register_updatable
+        self.gameobject.deregister_updatable = self.deregister_updatable
 
     def deactivate(self):
         del self.gameobject.updatables
-        del self.gameobject.send_update
-        del self.gameobject.add_updatable
+        del self.gameobject.register_updatable
+        del self.gameobject.deregister_updatable
 
         Component.deactivate(self)
+
+    def send_update(self):
+        for u in self.gameobject.updatables:
+            u.update()
+
+    def register_updatable(self, updatable):
+        self.gameobject.updatables.append(updatable)
+
+    def deregister_updatable(self, updatable):
+        self.gameobject.updatables.remove(updatable)
+
+
+class Timeline(Updater):
+
+    def __init__(self, updates_per_sec, timescale=1.0, paused=False):
+        Updater.__init__(self)
+        self.paused = paused
+        self.elapsedtime = 0.0
+        self.timescale = timescale
+        self.frequency = 1.0 / updates_per_sec  # todo is frequency correct?
+        self.timer = 0.0
+        self.last_notify_timestamp = 0.0
+
+    def activate(self):
+        Updater.activate(self)
+        self.gameobject.paused = self.paused
+        self.gameobject.elapsedtime = self.elapsedtime
+        self.gameobject.frequency = self.frequency
+        self.gameobject.timescale = self.timescale
+        self.gameobject.elapse_time = self.elapse_time
+        self.gameobject.pause = self.pause
+        self.gameobject.unpause = self.unpause
+        self.gameobject.time_till_next_call = self.time_till_next_call
+
+        GameManager.register_timeline(self.gameobject)
+
+    def deactivate(self):
+        del self.gameobject.paused
+        del self.gameobject.elapsedtime
+        del self.gameobject.frequency
+        del self.gameobject.timescale
+        del self.gameobject.elapse_time
+        del self.gameobject.pause
+        del self.gameobject.unpause
+        del self.gameobject.time_till_next_call
+        GameManager.deregister_timeline(self.gameobject.name)
+        Updater.deactivate(self)
+
+    def pause(self):
+        self.gameobject.paused = True
+
+    def unpause(self):
+        self.gameobject.paused = False
+
+    def elapse_time(self, delta):
+        if not self.paused:
+            self.gameobject.elapsedtime += delta * self.gameobject.timescale # todo not sure if correct / needed
+
+            self.timer += delta * self.gameobject.timescale
+            # print self.name + "elapsed time: " + str(self.elapsedtime)
+
+            if self.timer >= self.gameobject.frequency:
+                self.timer -= self.gameobject.frequency
+                self.notify()
+
+    def notify(self):
+        send_delta = self.gameobject.elapsedtime - self.last_notify_timestamp
+        self.last_notify_timestamp = self.gameobject.elapsedtime
+        self.send_update(send_delta)
 
     def send_update(self, delta):
         for u in self.gameobject.updatables:
             u.update(delta)
 
-    def add_updatable(self, updatable):
-        self.gameobject.updatables.append(updatable)
+    def time_till_next_call(self):
+        x = (self.gameobject.frequency - self.timer)
+        return max(0, x / self.gameobject.timescale)
 
 
-class TimelineUpdatable(Updatable):
+# todo also inherit timeline?
+class TimelineTimeUpdatable(TimeUpdatable):
 
     def __init__(self):
-        Updatable.__init__(self)
+        TimeUpdatable.__init__(self)
 
     def activate(self):
-        Updatable.activate(self)
+        TimeUpdatable.activate(self)
 
     def deactivate(self):
-        Updatable.deactivate(self)
+        TimeUpdatable.deactivate(self)
 
     def update(self, delta):
-        Updatable.update(self, delta)
+        TimeUpdatable.update(self, delta)
         self.gameobject.elapse_time(delta)
-
 
 # todo make a collider componenet and inherit
 class AABB(Component):
@@ -518,19 +541,19 @@ class Body(Component):
         Component.deactivate(self)
 
 
-class PhysicsController(Updatable):
+class PhysicsController(TimeUpdatable):
 
     def __init__(self):
-        Updatable.__init__(self)
+        TimeUpdatable.__init__(self)
 
     def activate(self):
-        Updatable.activate(self)
+        TimeUpdatable.activate(self)
 
     def deactivate(self):
-        Updatable.deactivate(self)
+        TimeUpdatable.deactivate(self)
 
     def update(self, delta):
-        Updatable.update(self, delta)
+        TimeUpdatable.update(self, delta)
         self.move_bodies(delta)
         self.check_collisions()
 
