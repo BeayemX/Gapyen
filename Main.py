@@ -9,17 +9,19 @@ import UpdaterManager
 def main():
 
     # create timelines
-    t_def = ComponentBuilder.build_timeline("Default", 60)
+    t_def = ComponentBuilder.build_timeline("DefaultTimeline", 60)
     t_slow = ComponentBuilder.build_timeline("Network", 5)
+    t_slow.use_updater(t_def)
     time_physics = ComponentBuilder.build_timeline("Physics", 60)
+    time_physics.use_updater(t_def)
+
 
     # create controller
     physics_controller = Component()
     physics_controller.add(Name("Physics Controller"))
     physics_controller.add(PhysicsController())
     physics_controller.activate()
-    # fixme shouldnt add updatable to timeline. should call updatable.usetimeline("aasdf")
-    time_physics.register_updatable(physics_controller)
+    physics_controller.use_updater(time_physics)
 
 
     # network controller
@@ -27,12 +29,7 @@ def main():
     network.add(Name("NetworkWrapper"))
     network.add(NetworkWrapper(3))
     network.activate()
-
-    # add stuff to timelines
-    # fixme super annoying to add all timelines to default timeline manually
-    t_def.register_updatable(t_slow)
-    t_def.register_updatable(time_physics)
-    t_slow.register_updatable(network)
+    network.use_updater(t_slow)
 
     # create objects
     ball = PongComponents.build_ball()

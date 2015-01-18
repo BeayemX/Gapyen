@@ -1,6 +1,10 @@
 # todo now
 """
 timeline adding more practical
+it works with use_updater but its strange if i don't know the timelines...?
+use_updater on gameobject or not?...
+updater in .gameobject needed?
+
 component.activate() somehow more practical?
 """
 

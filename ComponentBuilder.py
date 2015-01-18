@@ -18,7 +18,6 @@ def build_triangle(name, size):
 def build_timeline(name, updates_per_sec, timescale=1.0):
     c = Component()
     c.add(Name(name))
-    c.add(Updater())
     c.add(Timeline(updates_per_sec, timescale))
     c.add(TimelineTimeUpdatable())
     c.activate()

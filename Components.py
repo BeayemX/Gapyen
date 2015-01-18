@@ -190,33 +190,47 @@ class Name(Component):
 
 
 class Updatable(Component):
-    def __init__(self):
+    def __init__(self, updater=None):
         Component.__init__(self)
+        #if not updater:
+        #    updater = GameManager.timelines["DefaultTimeline"]
+        # todo add to gameobject?
+        # todo maybe a list?
+        #self.updater = updater
 
     def activate(self):
         Component.activate(self)
         self.gameobject.update = self.update
+        self.gameobject.use_updater = self.use_updater
+        #self.use_updater(self.updater)
 
     def deactivate(self):
         del self.gameobject.update
+        del self.gameobject.use_updater
         Component.deactivate(self)
 
     def update(self):
         pass
 
+    # todo maybe make usable if not activated. just set self.updater and onactivate --> updater.register...?
+    def use_updater(self, updater):
+        # todo should i deregister from old upddater?
+        # todo maybe only deregister if timline? because normal updater could be multiple...
+        updater.register_updatable(self.gameobject)
 
-class TimeUpdatable(Component):
+
+class TimeUpdatable(Updatable):
 
     def __init__(self):
-        Component.__init__(self)
+        Updatable.__init__(self)
 
     def activate(self):
-        Component.activate(self)
+        Updatable.activate(self)
         self.gameobject.update = self.update
 
     def deactivate(self):
         del self.gameobject.update
-        Component.deactivate(self)
+        Updatable.deactivate(self)
 
     def update(self, delta):
         pass
