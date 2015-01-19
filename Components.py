@@ -290,12 +290,11 @@ class NetworkWrapper(TimeUpdatable):
     def adjust_view(self):
         xprotocol.set_world_width(self.worldWidth)
 
-    def button_listener(self, button):
-        print button
+    def button_listener(self, address, button, down):
+        InputController.process_button(button, down)
 
     def axis_listener(self, address, axis, value):
-        print address, axis, value
-        InputController.move_paddle(axis, value)
+        InputController.process_axis(axis, value)
 
     def update_entity_transforms(self):
         # todo use list instead of dict for shapes?
