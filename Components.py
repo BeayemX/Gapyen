@@ -51,6 +51,7 @@ class Component:
 
         self.components.append(component)
         component.setgameobject(self)
+        return component
 
     def remove(self, component):
         self.components.remove(component)
@@ -234,6 +235,7 @@ class TimeUpdatable(Updatable):
 
     def update(self, delta):
         pass
+
 
 class NetworkWrapper(TimeUpdatable):
 
@@ -572,12 +574,10 @@ class PhysicsController(TimeUpdatable):
         self.check_collisions()
 
     def check_collisions(self):
-        for collider1 in GameManager.colliders:
-            for collider2 in GameManager.colliders:
-                if collider1 != collider2:
-                    if collider1.is_colliding(collider2):
-                        # TODO also call for collider2? because what if handling oves collider1 out of collider2?
-                        collider1.handle_collision(collider2)
+        for i in range(len(GameManager.colliders)):
+            for j in range(i+1, len(GameManager.colliders)):
+                if GameManager.colliders[i].is_colliding(GameManager.colliders[j]):
+                    GameManager.colliders[i].handle_collision(GameManager.colliders[j])
 
     def move_bodies(self, delta):
         for body in GameManager.bodies:

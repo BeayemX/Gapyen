@@ -1,3 +1,18 @@
+# physics
+#   acceleration
+# dead reckoning
+#   new game terminal
+#       buttons
+#
+# pose transimitter
+# vel transmitter?
+# acc transmitter?
+"""
+gravity / acceleration
+"""
+
+# game states
+
 # todo now
 """
 timeline adding more practical
