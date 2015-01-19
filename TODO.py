@@ -77,7 +77,6 @@ pausable, everybody can unpause
 # todo also implement modules as componeents so that there is one 'Game'-Root-Componeent and everything.
 # singleton? or how access globally?
 # is implemented inside that or hierarchically as children...
-# todo timeline reset()
 
 # todo OLD STUFF
 # todo game terminals working over network?

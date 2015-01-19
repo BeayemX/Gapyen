@@ -395,6 +395,7 @@ class Timeline(Updater):
         self.gameobject.pause = self.pause
         self.gameobject.unpause = self.unpause
         self.gameobject.time_till_next_call = self.time_till_next_call
+        self.gameobject.reset_timeline = self.reset
 
         GameManager.register_timeline(self.gameobject)
 
@@ -407,6 +408,7 @@ class Timeline(Updater):
         del self.gameobject.pause
         del self.gameobject.unpause
         del self.gameobject.time_till_next_call
+        del self.gameobject.reset_timeline
         GameManager.deregister_timeline(self.gameobject.name)
         Updater.deactivate(self)
 
@@ -439,6 +441,10 @@ class Timeline(Updater):
     def time_till_next_call(self):
         x = (self.gameobject.frequency - self.timer)
         return max(0, x / self.gameobject.timescale)
+
+    def reset(self):
+        self.gameobject.elapsedtime = 0.0
+        self.gameobject.timer = 0.0
 
 
 # todo also inherit timeline?
