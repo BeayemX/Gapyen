@@ -1,3 +1,12 @@
+# freitag
+#   ball outside screen
+#   reset ball
+#   score in output?
+#   movement not so crappy
+#   acc?
+
+# screen: game settings class?: aspect ration
+
 # physics
 #   acceleration
 # dead reckoning

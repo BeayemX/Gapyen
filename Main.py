@@ -32,6 +32,10 @@ def main():
     network.use_updater(t_slow)
 
     # create objects
+    # world frame
+
+
+    # interactive stuff
     ball = PongComponents.build_ball()
     paddle0 = PongComponents.build_paddle("paddle0")
     paddle0.pos.x = -40
