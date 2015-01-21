@@ -93,4 +93,4 @@ class BallLogic(CollisionHandler, TimeUpdatable):
 
     def update(self, delta):
         TimeUpdatable.update(self, delta)
-        self.gameobject.rotate_by(1 * delta)
+        #self.gameobject.rotate_by(1 * delta)

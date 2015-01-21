@@ -12,11 +12,11 @@ def main():
     # create timelines
     timeline_default = ComponentBuilder.build_timeline("DefaultTimeline", 60)
 
-    timeline_network_updates = ComponentBuilder.build_timeline("NetworkUpdates", 60)
-    timeline_network_updates.use_updater(timeline_default)
+    networkupdates = ComponentBuilder.build_timeline("NetworkUpdates", 60)
+    networkupdates.use_updater(timeline_default)
 
-    timeline_network_gameobjects_transmitter = ComponentBuilder.build_timeline("NetworkGOTransmitter", 3)
-    timeline_network_gameobjects_transmitter.use_updater(timeline_default)
+    posetransmitterupdates = ComponentBuilder.build_timeline("posetransmitterupdates", 60)
+    posetransmitterupdates.use_updater(timeline_default)
 
     timeline_physics = ComponentBuilder.build_timeline("Physics", 60)
     timeline_physics.use_updater(timeline_default)
@@ -35,13 +35,13 @@ def main():
     network.add(Name("NetworkWrapper"))
     network.add(NetworkWrapper(3))
     network.activate()
-    network.use_updater(timeline_network_updates)
+    network.use_updater(networkupdates)
 
     posetransmitter = Component()
     posetransmitter.add(Name("PoseTransmitter"))
     posetransmitter.add(PoseTransmitter())
     posetransmitter.activate()
-    posetransmitter.use_updater(timeline_network_gameobjects_transmitter)
+    posetransmitter.use_updater(posetransmitterupdates)
 
 
 
