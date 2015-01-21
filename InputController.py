@@ -17,18 +17,19 @@ def process_button(button, down):
 
 
 def process_axis(axis, value):
+    paddlespeed = 15
+    print str(axis)
+
     if axis == 0:
-        paddle = GameManager.find("paddle1")  # todo crap string comparison
-        paddle.move_by(Vec2(value, 0))
+        pass
     elif axis == 1:
-        paddle = GameManager.find("paddle1")
-        paddle.move_by(Vec2(0, -value))
+        paddle = GameManager.find("paddle1")  # todo crap string comparison
+        paddle.velocity = Vec2(0, -paddlespeed * value)
     elif axis == 2:
-        paddle = GameManager.find("paddle0")
-        paddle.move_by(Vec2(value, 0))
+        pass
     elif axis == 3:
         paddle = GameManager.find("paddle0")
-        paddle.move_by(Vec2(0, -value))
+        paddle.velocity = Vec2(0, -paddlespeed * value)
 
     else:
         print axis

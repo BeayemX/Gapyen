@@ -11,7 +11,7 @@ def main():
 
     # create timelines
     t_def = ComponentBuilder.build_timeline("DefaultTimeline", 60)
-    t_slow = ComponentBuilder.build_timeline("Network", 5)
+    t_slow = ComponentBuilder.build_timeline("Network", 30)
     t_slow.use_updater(t_def)
     time_physics = ComponentBuilder.build_timeline("Physics", 60)
     time_physics.use_updater(t_def)
@@ -41,13 +41,18 @@ def main():
     leftwall = PongComponents.build_wall(
         "Left Wall",
         wallwidth,
-        settings.worldWidth * settings.aspect - wallwidth)
+        settings.worldWidth * settings.aspect - wallwidth,
+        "DeathZone"
+    )
     leftwall.pos.x = -(settings.worldWidth/2 - wallwidth/2)
 
     rightwall = PongComponents.build_wall(
         "Right Wall",
         wallwidth,
-        settings.worldWidth * settings.aspect - wallwidth)
+        settings.worldWidth * settings.aspect - wallwidth,
+        "DeathZone"
+    )
+
     rightwall.pos.x = settings.worldWidth/2 - wallwidth/2
 
     topwall = PongComponents.build_wall(
