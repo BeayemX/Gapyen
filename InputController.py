@@ -18,7 +18,7 @@ def process_button(button, down):
 
 def process_axis(axis, value):
     if axis == 0:
-        paddle = GameManager.find("paddle1")
+        paddle = GameManager.find("paddle1")  # todo crap string comparison
         paddle.move_by(Vec2(value, 0))
     elif axis == 1:
         paddle = GameManager.find("paddle1")

@@ -39,6 +39,7 @@ def register_body(body):
 def deregister_body(body):
     bodies.remove(body)
 
+
 def register_collider(collider):
     colliders.append(collider)
 

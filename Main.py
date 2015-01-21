@@ -4,6 +4,7 @@ import PongComponents
 
 import ComponentBuilder
 import UpdaterManager
+import settings
 
 
 def main():
@@ -33,6 +34,36 @@ def main():
 
     # create objects
     # world frame
+
+    # leftwall = PongComponents.build_wall("Left Wall", 12, 7)
+
+    wallwidth = 2
+    leftwall = PongComponents.build_wall(
+        "Left Wall",
+        wallwidth,
+        settings.worldWidth * settings.aspect - wallwidth)
+    leftwall.pos.x = -(settings.worldWidth/2 - wallwidth/2)
+
+    rightwall = PongComponents.build_wall(
+        "Right Wall",
+        wallwidth,
+        settings.worldWidth * settings.aspect - wallwidth)
+    rightwall.pos.x = settings.worldWidth/2 - wallwidth/2
+
+    topwall = PongComponents.build_wall(
+        "Top Wall",
+        settings.worldWidth - wallwidth,
+        wallwidth
+    )
+    topwall.pos.y = -(settings.worldWidth/2 * settings.aspect - wallwidth/2)
+
+
+    bottomwall = PongComponents.build_wall(
+        "Bottom Wall",
+        settings.worldWidth - wallwidth,
+        wallwidth
+    )
+    bottomwall.pos.y = settings.worldWidth/2 * settings.aspect - wallwidth/2
 
 
     # interactive stuff

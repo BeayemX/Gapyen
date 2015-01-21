@@ -24,6 +24,18 @@ def build_ball():
     return c
 
 
+def build_wall(name, width, height):
+    c = Component()
+    c.add(Name(name))
+    c.add(Transform())
+    c.add(Shape([[-width/2, -height/2], [-width/2, height/2],
+                 [width/2, height/2], [width/2, -height/2]]))
+    c.add(AABB())
+    c.add(CollisionHandler())
+    c.activate()
+    return c
+
+
 class PaddleLogic(CollisionHandler, TimeUpdatable):
     def __init__(self):
         CollisionHandler.__init__(self)

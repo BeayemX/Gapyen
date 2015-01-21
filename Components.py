@@ -5,6 +5,7 @@ import sys
 import xprotocol
 import GameManager
 import InputController
+import settings
 
 from vector import Vec2
 
@@ -22,6 +23,7 @@ class Component:
         self.active = True
         if not self.gameobject:
             GameManager.register_gameobject(self)
+            # self.gameobject = self  # TODO should .gameobject be None or self
 
         for component in self.components:
             component.activate()
@@ -241,8 +243,7 @@ class NetworkWrapper(TimeUpdatable):
 
     def __init__(self, numusers):
         TimeUpdatable.__init__(self)
-        self.worldWidth = 100  # todo save externally?
-        self.triangleSize = 100  # todo save externally
+        self.worldWidth = settings.worldWidth
         self.objects = []
         self.numusers = numusers
 
@@ -463,6 +464,7 @@ class TimelineTimeUpdatable(TimeUpdatable):
         TimeUpdatable.update(self, delta)
         self.gameobject.elapse_time(delta)
 
+
 # todo make a collider componenet and inherit
 class AABB(Component):
     def __init__(self):
@@ -583,6 +585,7 @@ class PhysicsController(TimeUpdatable):
             for j in range(i+1, len(GameManager.colliders)):
                 if GameManager.colliders[i].is_colliding(GameManager.colliders[j]):
                     GameManager.colliders[i].handle_collision(GameManager.colliders[j])
+                    GameManager.colliders[j].handle_collision(GameManager.colliders[i])
 
     def move_bodies(self, delta):
         for body in GameManager.bodies:
