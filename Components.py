@@ -254,18 +254,15 @@ class NetworkWrapper(TimeUpdatable):
 
     def deactivate(self):
         self.stop_server()
-        # del self.gameobject.update
         TimeUpdatable.deactivate(self)
 
     def update(self, delta):
         TimeUpdatable.update(self, delta)
-        self.update_entity_transforms()  # TODO better name
         xprotocol.update()
 
     def start_server(self):
         xprotocol.startup(self.numusers)
         print "started server()"
-        #xprotocol.add_session_listener(self.connect)
         xprotocol.add_connection_listener(self.connect)
         print "added listner"
 
@@ -297,19 +294,11 @@ class NetworkWrapper(TimeUpdatable):
     def axis_listener(self, address, axis, value):
         InputController.process_axis(axis, value)
 
-    def update_entity_transforms(self):
-        # todo use list instead of dict for shapes?
-        for shape in GameManager.shapes:
-            xprotocol.move_entity(shape.name, shape.pos[0], shape.pos[1], shape.angle)
 
+class PoseTransmitter(TimeUpdatable):  # todo crappy name
 
-class RandomPose(TimeUpdatable):
-
-    def __init__(self, world_width, world_height):
+    def __init__(self):
         TimeUpdatable.__init__(self)
-        self.width = world_width  # todo also used in network... save externally
-        self.height = world_height  # todo also used in network... save externally
-        self.delta_counter = 0
 
     def activate(self):
         TimeUpdatable.activate(self)
@@ -319,12 +308,14 @@ class RandomPose(TimeUpdatable):
 
     def update(self, delta):
         TimeUpdatable.update(self, delta)
-        self.new_pose(delta)
+        self.update_entity_transforms()  # TODO better name
+        xprotocol.update()
 
-    def new_pose(self, delta):
-        self.delta_counter += delta
-        y = math.sin(self.delta_counter) * 10
-        self.gameobject.pos.y = y
+    def update_entity_transforms(self):
+        # todo use list instead of dict for shapes?
+        for shape in GameManager.shapes:
+            xprotocol.move_entity(shape.name, shape.pos[0], shape.pos[1],
+                                  shape.angle)
 
 
 # todo wip

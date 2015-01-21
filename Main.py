@@ -10,11 +10,16 @@ import settings
 def main():
 
     # create timelines
-    t_def = ComponentBuilder.build_timeline("DefaultTimeline", 60)
-    t_slow = ComponentBuilder.build_timeline("Network", 30)
-    t_slow.use_updater(t_def)
-    time_physics = ComponentBuilder.build_timeline("Physics", 60)
-    time_physics.use_updater(t_def)
+    timeline_default = ComponentBuilder.build_timeline("DefaultTimeline", 60)
+
+    timeline_network_updates = ComponentBuilder.build_timeline("NetworkUpdates", 60)
+    timeline_network_updates.use_updater(timeline_default)
+
+    timeline_network_gameobjects_transmitter = ComponentBuilder.build_timeline("NetworkGOTransmitter", 3)
+    timeline_network_gameobjects_transmitter.use_updater(timeline_default)
+
+    timeline_physics = ComponentBuilder.build_timeline("Physics", 60)
+    timeline_physics.use_updater(timeline_default)
 
 
     # create controller
@@ -22,7 +27,7 @@ def main():
     physics_controller.add(Name("Physics Controller"))
     physics_controller.add(PhysicsController())
     physics_controller.activate()
-    physics_controller.use_updater(time_physics)
+    physics_controller.use_updater(timeline_physics)
 
 
     # network controller
@@ -30,13 +35,18 @@ def main():
     network.add(Name("NetworkWrapper"))
     network.add(NetworkWrapper(3))
     network.activate()
-    network.use_updater(t_slow)
+    network.use_updater(timeline_network_updates)
+
+    posetransmitter = Component()
+    posetransmitter.add(Name("PoseTransmitter"))
+    posetransmitter.add(PoseTransmitter())
+    posetransmitter.activate()
+    posetransmitter.use_updater(timeline_network_gameobjects_transmitter)
+
+
 
     # create objects
     # world frame
-
-    # leftwall = PongComponents.build_wall("Left Wall", 12, 7)
-
     wallwidth = 2
     leftwall = PongComponents.build_wall(
         "Left Wall",
@@ -62,14 +72,12 @@ def main():
     )
     topwall.pos.y = -(settings.worldWidth/2 * settings.aspect - wallwidth/2)
 
-
     bottomwall = PongComponents.build_wall(
         "Bottom Wall",
         settings.worldWidth - wallwidth,
         wallwidth
     )
     bottomwall.pos.y = settings.worldWidth/2 * settings.aspect - wallwidth/2
-
 
     # interactive stuff
     ball = PongComponents.build_ball()
@@ -79,9 +87,9 @@ def main():
     paddle1 = PongComponents.build_paddle("paddle1")
     paddle1.pos.x = 40
 
-    t_def.register_updatable(ball)
-    t_def.register_updatable(paddle0)
-    t_def.register_updatable(paddle1)
+    timeline_default.register_updatable(ball)
+    timeline_default.register_updatable(paddle0)
+    timeline_default.register_updatable(paddle1)
 
     # start game
     UpdaterManager.start_loop()

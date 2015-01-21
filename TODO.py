@@ -1,9 +1,5 @@
 # freitag
-#   ball outside screen
-#   reset ball
-#   score in output?
-#   movement not so crappy
-#   acc?
+# acc?
 
 # screen: game settings class?: aspect ration
 
