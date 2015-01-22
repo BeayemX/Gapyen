@@ -457,24 +457,43 @@ class TimelineTimeUpdatable(TimeUpdatable):
 
 
 # todo make a collider componenet and inherit
-class AABB(Component):
-    def __init__(self):
+class Collider(Component):
+    def __init__(self, trigger=False):
         Component.__init__(self)
+        # todo use for physics
+        self.is_trigger = trigger
 
     def activate(self):
         Component.activate(self)
+        self.gameobject.is_trigger = self.is_trigger
+        self.gameobject.is_colliding = self.is_colliding
+
+    def deactivate(self):
+        del self.gameobject.is_trigger
+        del self.gameobject.is_colliding
+        Component.deactivate(self)
+
+    def is_colliding(self, other):
+        pass
+
+
+class AABB(Collider):
+    def __init__(self, trigger=False):
+        Collider.__init__(self, trigger)
+
+    def activate(self):
+        Collider.activate(self)
         GameManager.register_collider(self.gameobject)
+        # todo maybe inject only .collider not .aabb?
         self.gameobject.aabb = self.calculate_aabb()
         self.gameobject.calculate_aabb = self.calculate_aabb
-        self.gameobject.is_colliding = self.is_colliding
 
     def deactivate(self):
         del self.gameobject.AABB
         del self.gameobject.calculate_aabb
-        del self.gameobject.is_colliding
 
         GameManager.deregister_collider(self.gameobject)
-        Component.deactivate(self)
+        Collider.deactivate(self)
 
     def calculate_aabb(self):
         minx = sys.maxint
@@ -494,6 +513,7 @@ class AABB(Component):
                          (maxx-minx)/2,
                          (maxy-miny)/2)
 
+    # todo how to check if colliding with non-aabb?
     def is_colliding(self, other):
         # todo better check?
         if self.gameobject == other:
@@ -583,6 +603,7 @@ class PhysicsController(TimeUpdatable):
             body.move_by(body.velocity * delta)
 
 
+# todo unify with Collider class?
 class CollisionHandler(Component):
     def __init__(self):
         Component.__init__(self)
@@ -597,4 +618,5 @@ class CollisionHandler(Component):
 
     def handle_collision(self, other):
         # TODO move body out of collision? parent-CollisionHandler so alle children do it?
+        # only if not self.gameobject.trigger --> create first
         pass

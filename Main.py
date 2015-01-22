@@ -52,7 +52,7 @@ def main():
         "Left Wall",
         wallwidth,
         settings.worldWidth * settings.aspect - wallwidth,
-        "DeathZone"
+        tag="DeathZone"
     )
     leftwall.pos.x = -(settings.worldWidth/2 - wallwidth/2)
 
@@ -60,7 +60,7 @@ def main():
         "Right Wall",
         wallwidth,
         settings.worldWidth * settings.aspect - wallwidth,
-        "DeathZone"
+        tag="DeathZone"
     )
 
     rightwall.pos.x = settings.worldWidth/2 - wallwidth/2

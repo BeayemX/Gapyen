@@ -1,19 +1,11 @@
 # freitag
-# acc?
+# wie genau die acceleration einbauen?
+# wenn man posetransmitter nur 3x / sec aufruft weiss das terminal dann, dass
+#   es die pos aendern soll?
+#   --> dead reckoning? wie einbauen?
+# get direction for collision? or even better --> hitpoint?
 
-# physics
-#   acceleration
-# dead reckoning
-#   new game terminal
-#       buttons
-#
-# vel transmitter?
-# acc transmitter?
-"""
-gravity / acceleration
-"""
-
-# game states
+# game states?
 
 # todo now
 """
