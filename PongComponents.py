@@ -1,4 +1,4 @@
-import EventSystem
+import eventsystem
 
 from Components import *
 
@@ -70,13 +70,14 @@ class BallLogic(CollisionHandler, TimeUpdatable):
         CollisionHandler.activate(self)
         TimeUpdatable.activate(self)
 
-        EventSystem.add_eventlistener(EventSystem.EventType.ResetGame, self.handle_restart)
+        eventsystem.instance.register_event_listener(
+            eventsystem.EventType.ResetGame,
+            self.handle_restart)
 
     def deactivate(self):
-        #self.gameobject.handle_collision = CollisionHandler.handle_collision
-        #self.gameobject.update = TimeUpdatable.update
-
-        EventSystem.add_eventlistener(EventSystem.EventType.ResetGame, self.handle_restart)
+        eventsystem.instance.add_eventlistener(
+            eventsystem.EventType.ResetGame,
+            self.handle_restart)
 
         TimeUpdatable.deactivate(self)
         CollisionHandler.deactivate(self)
@@ -84,8 +85,6 @@ class BallLogic(CollisionHandler, TimeUpdatable):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
         if other.tag == "Paddle":
-            # todo clean up
-
             if self.gameobject.velocity.x > 0:  # right paddle
                 if self.gameobject.pos.x > other.pos.x - other.aabb.radius.x:
                     return
@@ -104,10 +103,12 @@ class BallLogic(CollisionHandler, TimeUpdatable):
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
         elif other.tag == "DeathZone":
-            EventSystem.trigger_event(EventSystem.EventType.ResetGame)
+            eventsystem.instance.send_event(eventsystem.EventType.ResetGame)
 
     def handle_restart(self):
+        print "vel0: " + str(self.gameobject.velocity)
         self.gameobject.velocity.x = -self.gameobject.velocity.x
+        print "vel1: " + str(self.gameobject.velocity)
         self.gameobject.pos = Vec2(0, 0)
 
     def update(self, delta):

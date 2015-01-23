@@ -1,5 +1,7 @@
 from Components import *
 from PongComponents import *
+from eventsystem import EventSystem
+import  eventsystem
 import PongComponents
 
 import ComponentBuilder
@@ -21,6 +23,16 @@ def main():
     timeline_physics = ComponentBuilder.build_timeline("Physics", 60)
     timeline_physics.use_updater(timeline_default)
 
+    timeline_events = ComponentBuilder.build_timeline("EventTimeline", 60)
+    timeline_events.use_updater(timeline_default)
+
+    # create Event System
+    eventSys = Component()
+    eventSys.add(Name("Event System"))
+    eventSys.add(EventSystem())
+    eventSys.activate()
+    eventSys.use_updater(timeline_events)
+    eventsystem.instance = eventSys
 
     # create controller
     physics_controller = Component()

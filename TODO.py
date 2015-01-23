@@ -55,3 +55,8 @@ pausable, everybody can unpause
 # because at the moment all components are just in the list but no hierarchy
 
 # todo call xprotocol.destroy_entity somewhere?
+
+# TODO cleanup
+# import * --> bad
+# split into mutliple files not one big componenet file?
+# modules?
