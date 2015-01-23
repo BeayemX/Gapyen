@@ -71,7 +71,6 @@ class BallLogic(CollisionHandler, TimeUpdatable):
         TimeUpdatable.activate(self)
         EventSystem.add_eventlistener("Restart", self.handle_restart)
 
-
     def deactivate(self):
         self.gameobject.handle_collision = CollisionHandler.handle_collision
         self.gameobject.update = TimeUpdatable.update
@@ -81,7 +80,16 @@ class BallLogic(CollisionHandler, TimeUpdatable):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
         if other.tag == "Paddle":
+
+            if self.gameobject.velocity.x > 0:  # right paddle
+                if self.gameobject.pos.x > other.pos.x - other.aabb.radius.x:
+                    return
+            else:  # left paddle
+                if self.gameobject.pos.x < other.pos.x + other.aabb.radius.x:
+                    return
+
             self.gameobject.velocity.x = -self.gameobject.velocity.x
+
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
         elif other.tag == "DeathZone":

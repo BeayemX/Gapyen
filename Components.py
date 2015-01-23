@@ -23,7 +23,7 @@ class Component:
         self.active = True
         if not self.gameobject:
             GameManager.register_gameobject(self)
-            # self.gameobject = self  # TODO should .gameobject be None or self
+            #self.gameobject = self  # TODO should .gameobject be None or self
 
         for component in self.components:
             component.activate()
@@ -495,6 +495,7 @@ class AABB(Collider):
         GameManager.deregister_collider(self.gameobject)
         Collider.deactivate(self)
 
+    # todo re-inject into .aabb
     def calculate_aabb(self):
         minx = sys.maxint
         miny = sys.maxint
@@ -517,6 +518,7 @@ class AABB(Collider):
     def is_colliding(self, other):
         # todo better check?
         if self.gameobject == other:
+            print "self collision"
             return False
 
         a = self.gameobject.aabb + self.gameobject.pos
@@ -532,6 +534,7 @@ class AABB(Collider):
 # todo move class because its not a componenet
 class Rectangle:
 
+    # todo center is (0|0) not .pos. is this a problem
     # todo negative size?
     def __init__(self, center_x, center_y, radius_x, radius_y):
         self.radius = Vec2(radius_x, radius_y)
@@ -619,4 +622,12 @@ class CollisionHandler(Component):
     def handle_collision(self, other):
         # TODO move body out of collision? parent-CollisionHandler so alle children do it?
         # only if not self.gameobject.trigger --> create first
-        pass
+        """
+        if not self.gameobject.trigger:
+            a = self.gameobject.aabb
+            b = other.aabb
+
+            a.center
+            b.center
+        """
+

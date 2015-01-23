@@ -3,7 +3,17 @@
 # wenn man posetransmitter nur 3x / sec aufruft weiss das terminal dann, dass
 #   es die pos aendern soll?
 #   --> dead reckoning? wie einbauen?
-# get direction for collision? or even better --> hitpoint?
+# get direction for collision? or even better --> hitpoint?1
+
+# lerp angle accordingly to hitpoint on paddle
+
+# todo QUEUE EVENTS
+#   send event --> queue
+#   fire event --> immediately
+# copy list before iterating over it?
+# delay for messages
+# eventsystem should be timeupdatable. use tim1estamp for delayed msgs
+# enum for event types?
 
 # game states?
 
