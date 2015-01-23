@@ -3,12 +3,12 @@ from Components import *
 
 instance = None  # singleton
 
+
 class Enum(set):
     def __getattr__(self, name):
         if name in self:
             return name
         raise Exception("EventType doesn't exist!")
-
 
 EventType = Enum(["ResetGame", "WallCollision"])
 

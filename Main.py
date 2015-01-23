@@ -56,7 +56,31 @@ def main():
     posetransmitter.use_updater(posetransmitterupdates)
 
 
+    """########## collider move out test
+    width = 10
+    halfwidth = width / 2
+    a = Component()
+    a.add(Name("box1"))
+    a.add(Transform())
+    a.add(Shape([[-halfwidth, - halfwidth], [-halfwidth, halfwidth], [halfwidth, halfwidth], [halfwidth, -halfwidth]]))
+    a.add(Body())
+    a.add(AABB())
+    a.add(CollisionHandler(True))
+    a.activate()
 
+    b = Component()
+    b.add(Name("box2"))
+    b.add(Transform([0,0]))
+    b.add(Shape([[-halfwidth, - halfwidth], [-halfwidth, halfwidth], [halfwidth, halfwidth], [halfwidth, -halfwidth]]))
+    b.add(Body(Vec2(-1, -0.5)))
+    b.add(AABB())
+    b.add(CollisionHandler())
+    b.activate()
+
+    ########### collider test end"""
+
+
+    #"""
     # create objects
     # world frame
     wallwidth = 2
@@ -92,7 +116,15 @@ def main():
     bottomwall.pos.y = settings.worldWidth/2 * settings.aspect - wallwidth/2
 
     # interactive stuff
-    ball = PongComponents.build_ball()
+    num = 25
+    for i in range(num):
+        alpha = 360.0 / num * i
+        ball = PongComponents.build_ball("ball" + str(i))
+        v = Vec2(math.cos(alpha), math.sin(alpha))
+        ball.velocity = v * settings.ballspeed
+
+    #raise Exception("asdf")
+
     paddle0 = PongComponents.build_paddle("paddle0")
     paddle0.pos.x = -40
 
@@ -102,6 +134,8 @@ def main():
     timeline_default.register_updatable(ball)
     timeline_default.register_updatable(paddle0)
     timeline_default.register_updatable(paddle1)
+    #"""
+
 
     # start game
     UpdaterManager.start_loop()

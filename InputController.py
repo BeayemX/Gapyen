@@ -19,12 +19,14 @@ def process_button(button, down):
 def process_axis(axis, value):
 
     if axis == 0:
-        pass
+        paddle = GameManager.find("paddle1")  # todo crap string comparison
+        paddle.velocity = Vec2(settings.paddlespeed * value, 0)
     elif axis == 1:
         paddle = GameManager.find("paddle1")  # todo crap string comparison
         paddle.velocity = Vec2(0, -settings.paddlespeed * value)
     elif axis == 2:
-        pass
+        paddle = GameManager.find("paddle0")  # todo crap string comparison
+        paddle.velocity = Vec2(settings.paddlespeed * value, 0)
     elif axis == 3:
         paddle = GameManager.find("paddle0")
         paddle.velocity = Vec2(0, -settings.paddlespeed * value)

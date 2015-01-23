@@ -4,7 +4,7 @@
 #   es die pos aendern soll?
 #   --> dead reckoning? wie einbauen?
 
-
+# static colliders? rigidbody? gravity?
 # todo QUEUE EVENTS
 # delay for messages
 # eventsystem should be timeupdatable. use tim1estamp for delayed msgs

@@ -16,13 +16,14 @@ def build_paddle(name):
     return c
 
 
-def build_ball():
+def build_ball(name):
     c = Component()
-    c.add(Name("Ball"))
+    c.add(Name(name))
+    c.add(Tag("Ball"))
     c.add(Transform())
-    c.add(Shape([[-1, 0], [0, 1], [1, 0], [0, -1]]))
+    c.add(Shape([[-1, -1], [-1, 1], [1, 1], [1, -1]]))
     c.add(AABB())
-    c.add(Body(Vec2(20, 20)))
+    c.add(Body(Vec2(20, 20).normalized() * settings.ballspeed))
     c.add(BallLogic())
     c.activate()
     return c
@@ -103,14 +104,13 @@ class BallLogic(CollisionHandler, TimeUpdatable):
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
         elif other.tag == "DeathZone":
-            eventsystem.instance.send_event(eventsystem.EventType.ResetGame)
+            #eventsystem.instance.send_event(eventsystem.EventType.ResetGame)
+            self.gameobject.velocity.x = -self.gameobject.velocity.x
 
     def handle_restart(self):
-        print "vel0: " + str(self.gameobject.velocity)
         self.gameobject.velocity.x = -self.gameobject.velocity.x
-        print "vel1: " + str(self.gameobject.velocity)
         self.gameobject.pos = Vec2(0, 0)
 
     def update(self, delta):
         TimeUpdatable.update(self, delta)
-        self.gameobject.rotate_by(5 * delta)
+        #self.gameobject.rotate_by(5 * delta)

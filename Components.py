@@ -487,10 +487,12 @@ class AABB(Collider):
         # todo maybe inject only .collider not .aabb?
         self.gameobject.aabb = self.calculate_aabb()
         self.gameobject.calculate_aabb = self.calculate_aabb
+        self.gameobject.get_overlapping_rect = self.get_overlapping_rect
 
     def deactivate(self):
         del self.gameobject.AABB
         del self.gameobject.calculate_aabb
+        del self.gameobject.get_overlapping_rect
 
         GameManager.deregister_collider(self.gameobject)
         Collider.deactivate(self)
@@ -529,6 +531,20 @@ class AABB(Collider):
         if abs(a.center[1] - b.center[1]) > (a.radius[1] + b.radius[1]):
             return False
         return True
+
+    # todo how to make sure that 'other' is also aabb?
+    def get_overlapping_rect(self, other):
+        a = self.gameobject.aabb + self.gameobject.pos
+        b = other.aabb + other.pos
+
+        diff_centerx = abs(a.center.x - b.center.x)
+        diff_radiusy = a.radius.x + b.radius.x
+        width = max(0, diff_radiusy - diff_centerx)
+
+        diff_centery = abs(a.center.y - b.center.y)
+        diff_radiusy = a.radius.y + b.radius.y
+        height = max(0, diff_radiusy - diff_centery)
+        return Rectangle(0, 0, width/2, height/2)
 
 
 # todo move class because its not a componenet
@@ -620,14 +636,20 @@ class CollisionHandler(Component):
         Component.deactivate(self)
 
     def handle_collision(self, other):
-        # TODO move body out of collision? parent-CollisionHandler so alle children do it?
-        # only if not self.gameobject.trigger --> create first
-        """
-        if not self.gameobject.trigger:
-            a = self.gameobject.aabb
-            b = other.aabb
+        if other.tag == "Ball":  # hack implement layer mask stuff
+            return
+        if not self.gameobject.is_trigger:
 
-            a.center
-            b.center
-        """
-
+            try:
+                # todo what if 2 moving objects collide, one is already moved out
+                # so the second one doesnt have a collision any more
+                # maye solve in physic step, event-queue-like??
+                overlap = self.gameobject.get_overlapping_rect(other)
+                length = min(overlap.radius.x, overlap.radius.y)
+                offset = length * self.gameobject.velocity.normalized() * -1
+                self.gameobject.move_by(offset)
+            except AttributeError:
+                #print "Attribute error / Collision Handler"
+                pass
+            except ZeroDivisionError:
+                print "Zero Division Error / Collision Handler"
