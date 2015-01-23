@@ -88,7 +88,14 @@ class BallLogic(CollisionHandler, TimeUpdatable):
                 if self.gameobject.pos.x < other.pos.x + other.aabb.radius.x:
                     return
 
-            self.gameobject.velocity.x = -self.gameobject.velocity.x
+            hitpoint_y = self.gameobject.pos.y - other.pos.y
+
+            sign = self.gameobject.velocity.x / math.fabs(self.gameobject.velocity.x)
+
+            direction = Vec2(sign * -1 * 20, hitpoint_y).normalized()  # fixme magic number
+            self.gameobject.velocity = direction * settings.ballspeed
+
+            #self.gameobject.velocity.x = -self.gameobject.velocity.x
 
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
