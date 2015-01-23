@@ -80,6 +80,7 @@ class BallLogic(CollisionHandler, TimeUpdatable):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
         if other.tag == "Paddle":
+            # todo clean up
 
             if self.gameobject.velocity.x > 0:  # right paddle
                 if self.gameobject.pos.x > other.pos.x - other.aabb.radius.x:
@@ -89,13 +90,12 @@ class BallLogic(CollisionHandler, TimeUpdatable):
                     return
 
             hitpoint_y = self.gameobject.pos.y - other.pos.y
+            sign = self.gameobject.velocity.x / abs(self.gameobject.velocity.x)
 
-            sign = self.gameobject.velocity.x / math.fabs(self.gameobject.velocity.x)
+            direction = Vec2(sign * -1 * other.aabb.radius.y, hitpoint_y)
+            direction.normalize()
 
-            direction = Vec2(sign * -1 * 20, hitpoint_y).normalized()  # fixme magic number
             self.gameobject.velocity = direction * settings.ballspeed
-
-            #self.gameobject.velocity.x = -self.gameobject.velocity.x
 
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
@@ -108,4 +108,4 @@ class BallLogic(CollisionHandler, TimeUpdatable):
 
     def update(self, delta):
         TimeUpdatable.update(self, delta)
-        #self.gameobject.rotate_by(1 * delta)
+        self.gameobject.rotate_by(5 * delta)
