@@ -6,12 +6,8 @@
 
 
 # todo QUEUE EVENTS
-#   send event --> queue
-#   fire event --> immediately
-# copy list before iterating over it?
 # delay for messages
 # eventsystem should be timeupdatable. use tim1estamp for delayed msgs
-# enum for event types?
 
 # game states?
 
