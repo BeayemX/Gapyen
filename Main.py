@@ -116,7 +116,7 @@ def main():
     bottomwall.pos.y = settings.worldWidth/2 * settings.aspect - wallwidth/2
 
     # interactive stuff
-    num = 25
+    num = 2
     for i in range(num):
         alpha = 360.0 / num * i
         ball = PongComponents.build_ball("ball" + str(i))

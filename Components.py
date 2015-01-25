@@ -652,4 +652,4 @@ class CollisionHandler(Component):
                 #print "Attribute error / Collision Handler"
                 pass
             except ZeroDivisionError:
-                print "Zero Division Error / Collision Handler"
+                print "Zero Division Error / Collision Handler, name=" + self.gameobject.name

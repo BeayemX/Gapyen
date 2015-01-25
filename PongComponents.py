@@ -104,8 +104,8 @@ class BallLogic(CollisionHandler, TimeUpdatable):
         if other.tag == "Wall":
             self.gameobject.velocity.y = -self.gameobject.velocity.y
         elif other.tag == "DeathZone":
-            #eventsystem.instance.send_event(eventsystem.EventType.ResetGame)
-            self.gameobject.velocity.x = -self.gameobject.velocity.x
+            eventsystem.instance.send_event(eventsystem.EventType.ResetGame)
+            #self.gameobject.velocity.x = -self.gameobject.velocity.x
 
     def handle_restart(self):
         self.gameobject.velocity.x = -self.gameobject.velocity.x
