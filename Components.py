@@ -113,8 +113,8 @@ class Transform(Component):
         del self.gameobject.rotate_to
         Component.deactivate(self)
 
-    def move_by(self, delta):
-        self.gameobject.pos += delta #Vec2(self.gameobject.pos.x + delta.x, self.gameobject.pos.y + delta.y)
+    def move_by(self, delta_pos):
+        self.gameobject.pos += delta_pos
 
     # todo rename to set_pos?
     def move_to(self, x, y):
@@ -212,6 +212,8 @@ class Updatable(Component):
         del self.gameobject.use_updater
         Component.deactivate(self)
 
+    # todo shouldn't we be able to select which method to inject, because its \
+    # a problem if we want to listen to 2 updaters and execute differnt methods
     def update(self):
         pass
 
@@ -573,29 +575,51 @@ class Rectangle:
 
 class Body(Component):
 
-    def __init__(self, velocity=Vec2(0, 0), mass=1):
+    def __init__(self, velocity=None, acceleration=Vec2(0, 0), mass=1.0, linear_damping=0.1):
         Component.__init__(self)
+        if not velocity:
+            velocity = Vec2(0, 0)
+
         self.velocity = velocity
+        self.acceleration = acceleration
         self.mass = mass
+        self.linear_damping = linear_damping
 
     def activate(self):
         Component.activate(self)
 
         self.gameobject.mass = self.mass
         self.gameobject.velocity = self.velocity
+        self.gameobject.acceleration = self.acceleration
+
+        self.gameobject.linear_damping = self.linear_damping
+
+        self.gameobject.physics_timestep = self.physics_timestep
 
         GameManager.register_body(self.gameobject)
 
     def deactivate(self):
         del self.gameobject.mass
         del self.gameobject.velocity
+        del self.gameobject.acceleration
+        del self.gameobject.linear_damping
+
+        del self.gameobject.physics_timestep
 
         GameManager.deregister_body(self.gameobject)
         Component.deactivate(self)
 
+    # FIXME crappy method name
+    def physics_timestep(self, delta):
+        self.gameobject.velocity += self.gameobject.acceleration  # todo * delta?
+        # todo damping before moving or after?
+        self.gameobject.velocity *= 1.0 - self.gameobject.linear_damping
+        # todo heute new damping
+        # an+1 = an - Vn * damping
+        self.gameobject.move_by(self.gameobject.velocity * delta)
+
 
 class PhysicsController(TimeUpdatable):
-
     def __init__(self):
         TimeUpdatable.__init__(self)
 
@@ -610,16 +634,16 @@ class PhysicsController(TimeUpdatable):
         self.move_bodies(delta)
         self.check_collisions()
 
+    def move_bodies(self, delta):
+        for body in GameManager.bodies:
+            body.physics_timestep(delta)
+
     def check_collisions(self):
         for i in range(len(GameManager.colliders)):
             for j in range(i+1, len(GameManager.colliders)):
                 if GameManager.colliders[i].is_colliding(GameManager.colliders[j]):
                     GameManager.colliders[i].handle_collision(GameManager.colliders[j])
                     GameManager.colliders[j].handle_collision(GameManager.colliders[i])
-
-    def move_bodies(self, delta):
-        for body in GameManager.bodies:
-            body.move_by(body.velocity * delta)
 
 
 # todo unify with Collider class?
@@ -639,7 +663,6 @@ class CollisionHandler(Component):
         if other.tag == "Ball":  # hack implement layer mask stuff
             return
         if not self.gameobject.is_trigger:
-
             try:
                 # todo what if 2 moving objects collide, one is already moved out
                 # so the second one doesnt have a collision any more

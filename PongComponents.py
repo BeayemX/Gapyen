@@ -23,9 +23,10 @@ def build_ball(name):
     c.add(Transform())
     c.add(Shape([[-1, -1], [-1, 1], [1, 1], [1, -1]]))
     c.add(AABB())
-    c.add(Body(Vec2(20, 20).normalized() * settings.ballspeed))
+    c.add(Body(acceleration=Vec2(1, 1).normalized() * settings.ballspeed))
     c.add(BallLogic())
     c.activate()
+    #c.acceleration = Vec2(1, 1) * settings.ballspeed
     return c
 
 
@@ -49,7 +50,7 @@ class PaddleLogic(CollisionHandler, TimeUpdatable):
 
     def activate(self):
         CollisionHandler.activate(self)
-        TimeUpdatable.activate(self)  # todo does this write the self.update into the gameobject?
+        TimeUpdatable.activate(self)
 
     def deactivate(self):
         CollisionHandler.deactivate(self)
@@ -100,18 +101,22 @@ class BallLogic(CollisionHandler, TimeUpdatable):
             direction = Vec2(sign * -1 * other.aabb.radius.y, hitpoint_y)
             direction.normalize()
 
-            self.gameobject.velocity = direction * settings.ballspeed
+            self.gameobject.acceleration = direction * settings.ballspeed
+            self.gameobject.velocity.x = -self.gameobject.velocity.x
 
-        if other.tag == "Wall":
+        elif other.tag == "Wall":
+            self.gameobject.acceleration.y = -self.gameobject.acceleration.y
             self.gameobject.velocity.y = -self.gameobject.velocity.y
+
         elif other.tag == "DeathZone":
             if not self.out_of_game:
                 self.out_of_game = True
                 eventsystem.instance.send_event_after_sec(eventsystem.EventType.ResetGame, 2)
-                #self.gameobject.velocity.x = -self.gameobject.velocity.x
+                # self.gameobject.acceleration.x = -self.gameobject.acceleration.x
 
     def handle_restart(self):
-        self.gameobject.velocity.x = -self.gameobject.velocity.x
+        self.gameobject.acceleration.x = -self.gameobject.acceleration.x
+        self.gameobject.velocity = Vec2(0, 0)
         self.gameobject.pos = Vec2(0, 0)
         self.out_of_game = False
 

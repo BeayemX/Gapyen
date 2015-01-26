@@ -116,12 +116,12 @@ def main():
     bottomwall.pos.y = settings.worldWidth/2 * settings.aspect - wallwidth/2
 
     # interactive stuff
-    num = 2
+    num = 1
     for i in range(num):
         alpha = 360.0 / num * i
         ball = PongComponents.build_ball("ball" + str(i))
-        v = Vec2(math.cos(alpha), math.sin(alpha))
-        ball.velocity = v * settings.ballspeed
+        direction = Vec2(math.cos(alpha), math.sin(alpha))
+        ball.acceleration = direction * settings.ballspeed
 
     #raise Exception("asdf")
 
