@@ -23,7 +23,7 @@ def build_ball(name):
     c.add(Transform())
     c.add(Shape([[-1, -1], [-1, 1], [1, 1], [1, -1]]))
     c.add(AABB())
-    c.add(Body(acceleration=Vec2(1, 1).normalized() * settings.ballspeed))
+    c.add(Body(velocity=Vec2(1, 1).normalized() * settings.ballspeed, linear_damping=0))
     c.add(BallLogic())
     c.activate()
     #c.acceleration = Vec2(1, 1) * settings.ballspeed

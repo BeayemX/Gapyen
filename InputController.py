@@ -21,15 +21,15 @@ def process_axis(axis, value):
 
     if axis == 0:
         paddle = GameManager.find("paddle1")  # todo crap string comparison
-        paddle.acceleration = Vec2(settings.paddlespeed * value, 0)
+        paddle.add_force(Vec2(settings.paddlespeed * value, 0))
     elif axis == 1:
         paddle = GameManager.find("paddle1")  # todo crap string comparison
-        paddle.acceleration = Vec2(0, -settings.paddlespeed * value)
+        paddle.add_force(Vec2(0, -settings.paddlespeed * value))
     elif axis == 2:
         paddle = GameManager.find("paddle0")  # todo crap string comparison
-        paddle.acceleration = Vec2(settings.paddlespeed * value, 0)
+        paddle.add_force(Vec2(settings.paddlespeed * value, 0))
     elif axis == 3:
         paddle = GameManager.find("paddle0")
-        paddle.acceleration = Vec2(0, -settings.paddlespeed * value)
+        paddle.add_force(Vec2(0, -settings.paddlespeed * value))
     else:
         raise Exception("Wrong Axis?")

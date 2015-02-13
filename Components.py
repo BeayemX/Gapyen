@@ -575,24 +575,36 @@ class Rectangle:
 
 class Body(Component):
 
-    def __init__(self, velocity=None, acceleration=Vec2(0, 0), mass=1.0, linear_damping=0.1):
+    def __init__(self, velocity=None, acceleration=Vec2(0, 0), mass=1.0, linear_damping=1):
         Component.__init__(self)
         if not velocity:
             velocity = Vec2(0, 0)
 
         self.velocity = velocity
+        self.ang_velocity = 0
         self.acceleration = acceleration
+        self.ang_acc = 0
         self.mass = mass
+        self.moi = 0.5  # moment of inertia
         self.linear_damping = linear_damping
+        self.ang_damping = 0.1
+        self.force = Vec2(0, 0)
+        self.torque = 0.0
 
     def activate(self):
         Component.activate(self)
 
         self.gameobject.mass = self.mass
         self.gameobject.velocity = self.velocity
+        self.gameobject.ang_velocity = self.ang_velocity
         self.gameobject.acceleration = self.acceleration
+        self.gameobject.ang_acc = self.ang_acc
 
         self.gameobject.linear_damping = self.linear_damping
+        self.gameobject.ang_damping = self.ang_damping
+
+        self.gameobject.add_force = self.add_force
+        self.gameobject.add_torque = self.add_torque
 
         self.gameobject.physics_timestep = self.physics_timestep
 
@@ -601,23 +613,47 @@ class Body(Component):
     def deactivate(self):
         del self.gameobject.mass
         del self.gameobject.velocity
+        del self.gameobject.ang_velocity
         del self.gameobject.acceleration
+        del self.gameobject.ang_acc
         del self.gameobject.linear_damping
+        del self.gameobject.ang_damping
 
+        del self.gameobject.add_force
+        del self.gameobject.add_torque
         del self.gameobject.physics_timestep
 
         GameManager.deregister_body(self.gameobject)
         Component.deactivate(self)
 
+    def add_force(self, force):
+        self.force += force
+
+    def add_torque(self, torque):
+        self.torque += torque
+
+    def clear_forces(self):
+        self.force[0] = 0
+        self.force[1] = 0
+        self.torque = 0
+
     # FIXME crappy method name
     def physics_timestep(self, delta):
-        self.gameobject.velocity += self.gameobject.acceleration  # todo * delta?
-        # todo damping before moving or after?
-        self.gameobject.velocity *= 1.0 - self.gameobject.linear_damping
-        # todo heute new damping
-        # an+1 = an - Vn * damping
+        # linear damping
+        self.gameobject.add_force(self.gameobject.velocity * -self.gameobject.linear_damping)
+        self.gameobject.add_torque(-self.gameobject.ang_velocity * self.gameobject.ang_damping)
+
+        # calculate accelerations
+        self.gameobject.acceleration = self.force * (1.0 / self.gameobject.mass)  # vec2 has no '/'
+        self.gameobject.ang_acc = self.torque / self.moi
+
+        # euler step
+        self.gameobject.velocity += self.gameobject.acceleration * delta
+        self.gameobject.pos += self.gameobject.velocity * delta
+
         self.gameobject.move_by(self.gameobject.velocity * delta)
 
+        self.clear_forces()
 
 class PhysicsController(TimeUpdatable):
     def __init__(self):

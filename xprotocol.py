@@ -92,6 +92,7 @@ def add_connection_listener(listener):
     """Adds the given connection listener.
     connection listener must have the following signature:
       listener(peer, connected)
+
     - peer: the client that has connected or disconnected.
     - connected: True if the client has connected, False
                  if the client has disconnected.
@@ -106,8 +107,10 @@ def add_axis_listener(listener):
     """Adds the given axis listener.
     Axis listener must have the following signature:
       listener(peer, axis_number, axis_value)
+
     - peer: the client that is the origin of the message
     - axis_number: integer value >0 that identifies the axis.
+
     - axis_value: float value between -1.0 and 1.0. Specified
                   the new position of the axis.
     """
@@ -121,9 +124,11 @@ def add_button_listener(listener):
     """Adds the given button listener.
     button listener must have the following signature:
       listener(peer, button_number, pressed)
+
     - peer: the client that is the origin of the message
     
     - button_number: integer value >0 that identifies the button.
+
     - pressed: True if the button has been pressed, False if
                the button has been released.
     """
@@ -138,13 +143,16 @@ def add_session_listener(listener):
     """Adds the given session listener.
     Session listener must accept an boolean argument indicating if the
     session has been started or stopped.
+
     Example:
     --------
+
     def my_session_listener(started):
         if started:
             print 'session has been started'
         else:
             print 'session has been stopped'
+
     xprotocol.add_session_listener(my_session_listener)
     """
     _session_listener.append(listener)
