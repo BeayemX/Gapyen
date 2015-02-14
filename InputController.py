@@ -18,7 +18,8 @@ def process_button(button, down):
 
 
 def process_axis(axis, value):
-
+    """
+    pong
     if axis == 0:
         paddle = GameManager.find("paddle1")  # todo crap string comparison
         paddle.add_force(Vec2(settings.paddlespeed * value, 0))
@@ -33,3 +34,13 @@ def process_axis(axis, value):
         paddle.add_force(Vec2(0, -settings.paddlespeed * value))
     else:
         raise Exception("Wrong Axis?")
+    """
+
+    if axis == 0:
+        ship = GameManager.find("Ship1")  # todo crap string comparison
+        ship.steer(-value)
+    elif axis == 1:
+        ship = GameManager.find("Ship1")  # todo crap string comparison
+        ship.accelerate(-value)
+
+

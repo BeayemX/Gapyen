@@ -8,6 +8,9 @@ import ComponentBuilder
 import UpdaterManager
 import settings
 
+import AsteroidsComponents
+from AsteroidsComponents import *
+
 
 def main():
 
@@ -80,7 +83,7 @@ def main():
     ########### collider test end"""
 
 
-    #"""
+    """ pong
     # create objects
     # world frame
     wallwidth = 2
@@ -135,6 +138,12 @@ def main():
     timeline_default.register_updatable(paddle0)
     timeline_default.register_updatable(paddle1)
     #"""
+
+
+    # asteroids
+    ship = build_ship("Ship1")
+    timeline_default.register_updatable(ship)
+
 
 
     # start game
