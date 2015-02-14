@@ -10,8 +10,7 @@ def process_button(button, down):
             # GameManager.find("Event System").trigger_event("ResetGame")  # pong
             ship = GameManager.find("Ship1")  # todo crap string comparison
             ship.shoot_bullet()
-
-    if button == 1:
+    elif button == 1:
         if down:
             ship = GameManager.find("Ship1")  # todo crap string comparison
             ship.shoot_missile()
@@ -20,7 +19,7 @@ def process_button(button, down):
     elif button == 3:
         print "Ctrl-R"
     else:
-        print button
+        print "button: " + str(button)
 
 
 def process_axis(axis, value):

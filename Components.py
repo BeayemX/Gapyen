@@ -579,10 +579,13 @@ class Rectangle:
 
 class Body(Component):
 
-    def __init__(self, velocity=None, acceleration=Vec2(0, 0), mass=1.0, linear_damping=1):
+    def __init__(self, velocity=None, acceleration=None, mass=1.0, linear_damping=1):
         Component.__init__(self)
         if not velocity:
             velocity = Vec2(0, 0)
+
+        if not acceleration:
+            acceleration = Vec2(0, 0)
 
         self.velocity = velocity
         self.ang_velocity = 0
