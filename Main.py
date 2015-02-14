@@ -143,6 +143,8 @@ def main():
     # asteroids
     ship = build_ship("Ship1")
     timeline_default.register_updatable(ship)
+    ship2 = build_ship("Ship2")
+    timeline_default.register_updatable(ship2)
 
 
 

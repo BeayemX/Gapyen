@@ -75,7 +75,7 @@ def register_shape(shape):
     # todo remove me when using .uid instead of .name
     for s in shapes:
         if s.name == shape.name:
-            raise Exception("Using existing name! Will lead to problems with "
+            raise Exception("Using existing name '" + s.name + "'! Will lead to problems with "
                             "xprotocol.spawn_entity()")
     shapes.append(shape)
 

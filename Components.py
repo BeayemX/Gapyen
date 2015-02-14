@@ -90,8 +90,10 @@ class Hierarchy(Component):
 
 class Transform(Component):
 
-    def __init__(self, pos=Vec2(0, 0), angle=0):
+    def __init__(self, pos=None, angle=0):
         Component.__init__(self)
+        if not pos:
+            pos = Vec2(0, 0)
         self.initPos = Vec2(pos[0], pos[1])
         self.initAngle = angle
 
@@ -137,10 +139,12 @@ class Shape(Component):
         Component.activate(self)
         self.gameobject.vertices = self.vertices
         GameManager.register_shape(self.gameobject)
+        xprotocol.spawn_entity(self.gameobject.name, self.gameobject.pos.x, self.gameobject.pos.y, self.gameobject.angle, self.vertices)
 
     def deactivate(self):
         del self.gameobject.vertices
         GameManager.deregister_shape(self.gameobject)
+        xprotocol.destroy_entity(self.gameobject.name)
         Component.deactivate(self)
 
 
@@ -275,7 +279,7 @@ class NetworkWrapper(TimeUpdatable):
         # TODO implement me. or already enough?
         xprotocol._stop_session()
 
-    def connect(self, adress, started):
+    def connect(self, address, started):
         if started:
             print "user connected"
             self.adjust_view()
@@ -696,9 +700,12 @@ class CollisionHandler(Component):
         Component.deactivate(self)
 
     def handle_collision(self, other):
+        # pong
+        """
         if other.tag == "Ball":  # hack implement layer mask stuff
             return
-        if not self.gameobject.is_trigger:
+        """
+        if not self.gameobject.is_trigger and not other.is_trigger:
             try:
                 # todo what if 2 moving objects collide, one is already moved out
                 # so the second one doesnt have a collision any more
