@@ -25,7 +25,7 @@ def build_bullet(pos, direction):
     c.add(Name("Bullet" + str(time.time()))) # fixme crap to add timestamp to make bullet names unique for xprotocol spawn which uses go.name
     c.add(Tag("Bullet"))
     c.add(Transform(pos))
-    size = 0.1
+    size = 1
     c.add(Shape([
         [-size, -size],
         [-size, size],
@@ -111,19 +111,31 @@ class Asteroid(Component):
         Component.deactivate(self)
 
 
-class Bullet(CollisionHandler):
+class Bullet(CollisionHandler, TimeUpdatable):
     def __init__(self, direction):
         CollisionHandler.__init__(self)
+        TimeUpdatable.__init__(self)
+
         self.direction = direction
 
-        self.speed = 25
+        self.speed = 1
+        self.elapsed_time = 0
 
     def activate(self):
         CollisionHandler.activate(self)
+        TimeUpdatable.activate(self)
+
+        t = GameManager.timelines["DefaultTimeline"]
+        t.register_updatable(self.gameobject)
+
         self.gameobject.velocity = self.direction * self.speed
 
     def deactivate(self):
+        t = GameManager.timelines["DefaultTimeline"]
+        t.deregister_updatable(self.gameobject)
+
         CollisionHandler.deactivate(self)
+        TimeUpdatable.deactivate(self)
 
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
@@ -131,6 +143,16 @@ class Bullet(CollisionHandler):
         #if other != self.gameobject:
         print "coll with: " + other.name
         #self.gameobject.deactivate()
+
+    def update(self, delta):
+        self.elapsed_time += delta
+
+        if self.elapsed_time > 1:
+            self.destroy_itself()
+
+    def destroy_itself(self):
+        self.gameobject.deactivate()
+
 
 class Missile(Bullet):
     def __init__(self):

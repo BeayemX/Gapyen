@@ -35,7 +35,7 @@ class Component:
             component.deactivate()
 
         if not self.gameobject:
-            GameManager.deregister_gameobject()
+            GameManager.deregister_gameobject(self)
 
         GameManager.deregister_entity(self)
 
@@ -238,7 +238,7 @@ class TimeUpdatable(Updatable):
         self.gameobject.update = self.update
 
     def deactivate(self):
-        del self.gameobject.update
+        self.gameobject.update = Updatable.update(self)
         Updatable.deactivate(self)
 
     def update(self, delta):
@@ -496,7 +496,7 @@ class AABB(Collider):
         self.gameobject.get_overlapping_rect = self.get_overlapping_rect
 
     def deactivate(self):
-        del self.gameobject.AABB
+        del self.gameobject.aabb
         del self.gameobject.calculate_aabb
         del self.gameobject.get_overlapping_rect
 

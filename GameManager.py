@@ -17,9 +17,10 @@ def register_entity(component):
 
 
 def deregister_entity(component):
-    #component.deactivate()
-    # todo not sure if this works, what if componenet is not in the last scope?
-    scopes[-1].remove(component)
+    for scope in scopes:
+        for comp in scope:
+            if comp == component:
+                scope.remove(comp)
 
 
 def push_scope():
