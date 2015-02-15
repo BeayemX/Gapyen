@@ -682,11 +682,17 @@ class PhysicsController(TimeUpdatable):
             body.physics_timestep(delta)
 
     def check_collisions(self):
+        collided_objects = set([])
         for i in range(len(GameManager.colliders)):
             for j in range(i+1, len(GameManager.colliders)):
                 if GameManager.colliders[i].is_colliding(GameManager.colliders[j]):
                     GameManager.colliders[i].handle_collision(GameManager.colliders[j])
                     GameManager.colliders[j].handle_collision(GameManager.colliders[i])
+                    collided_objects.add(GameManager.colliders[i])
+                    collided_objects.add(GameManager.colliders[j])
+
+        for col in collided_objects:
+            col.handle_collided()
 
 
 # todo unify with Collider class?
@@ -697,9 +703,11 @@ class CollisionHandler(Component):
     def activate(self):
         Component.activate(self)
         self.gameobject.handle_collision = self.handle_collision
+        self.gameobject.handle_collided = self.handle_collided
 
     def deactivate(self):
         del self.gameobject.handle_collision
+        del self.gameobject.handle_collided
         Component.deactivate(self)
 
     def handle_collision(self, other):
@@ -721,4 +729,9 @@ class CollisionHandler(Component):
                 #print "Attribute error / Collision Handler"
                 pass
             except ZeroDivisionError:
-                print "Zero Division Error / Collision Handler, name=" + self.gameobject.name
+                # todo exception handling
+                #print "Zero Division Error / Collision Handler, name=" + self.gameobject.name
+                pass
+
+    def handle_collided(self):
+        pass

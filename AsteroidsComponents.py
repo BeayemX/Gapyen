@@ -1,6 +1,7 @@
 from Components import *
 import time
 import uuid
+import random
 def build_ship(name):
     c = Component()
 
@@ -39,8 +40,45 @@ def build_bullet(pos, direction):
     c.activate()
     return c
 
-def build_missile():
-    pass
+def build_missile(pos, direction):
+    c = Component()
+
+    c.add(Name("Missile" + str(uuid.uuid4())))
+    c.add(Tag("Missile"))
+    c.add(Transform(pos))
+    size = 0.2
+    c.add(Shape([
+        [-size, -size],
+        [-size, size],
+        [size, size],
+        [size, -size]
+    ]))
+    c.add(AABB(trigger=True))
+    c.add(Body(linear_damping=0))
+    c.add(Missile(direction))
+
+    c.activate()
+    return c
+
+def build_asteroid(pos, size=4):
+    c = Component()
+
+    c.add(Name("Asteroid" + str(uuid.uuid4())))
+    c.add(Tag("Asteroid"))
+    c.add(Transform(pos=pos))
+    c.add(Shape([
+        [-size, -size],
+        [-size, size],
+        [size, size],
+        [size, -size]
+    ]))
+    c.add(AABB(trigger=True))
+    c.add(Body(linear_damping=0))
+    c.add(Asteroid(pos, size))
+
+    c.activate()
+    return c
+
 
 class Ship(TimeUpdatable, CollisionHandler):
     def __init__(self):
@@ -106,15 +144,51 @@ class Ship(TimeUpdatable, CollisionHandler):
 
 
 
-class Asteroid(Component):
-    def __init__(self):
-        Component.__init__(self)
+class Asteroid(CollisionHandler):
+    def __init__(self, spawn_pos, size):
+        CollisionHandler.__init__(self)
+
+        # spawn random pos
+        # random direction
+        self.spawn_pos = spawn_pos
+        #self.direction = Vec2(random.random - 0.5, random.random - 0.5).normalized()
+        self.direction = Vec2(1, 1).normalized()
+        self.speed = 1
+
+        self.size = size
+        self.should_explode = False
+
 
     def activate(self):
-        Component.activate(self)
+        CollisionHandler.activate(self)
+
+
+        self.gameobject.pos = self.spawn_pos
+        self.gameobject.velocity = self.direction * self.speed
 
     def deactivate(self):
-        Component.deactivate(self)
+        CollisionHandler.deactivate(self)
+
+    def handle_collision(self, other):
+        CollisionHandler.handle_collision(self, other)
+        if other.tag != self.gameobject.tag:
+            self.should_explode = True
+
+    def handle_collided(self):
+        CollisionHandler.handle_collided(self)
+        if self.should_explode:
+            self.explode()
+
+    def explode(self):
+        if self.size > 1:
+            #"""
+            b = build_asteroid(self.gameobject.pos, self.size -0.1)
+            b.velocity = b.velocity.rotated(math.pi / 2)
+            #b = build_asteroid(self.gameobject.pos, self.size -1)
+            #b.velocity = b.velocity.rotate(math.pi / 2)
+            #"""
+
+        self.gameobject.deactivate()
 
 
 class Bullet(CollisionHandler, TimeUpdatable):
@@ -126,6 +200,7 @@ class Bullet(CollisionHandler, TimeUpdatable):
 
         self.speed = 25
         self.elapsed_time = 0
+        self.collided = False
 
     def activate(self):
         CollisionHandler.activate(self)
@@ -146,9 +221,13 @@ class Bullet(CollisionHandler, TimeUpdatable):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
 
-        #if other != self.gameobject:
-        print "coll with: " + other.name
-        #self.gameobject.deactivate()
+        if other.tag != "Ship" and other.tag != "Bullet":
+            self.collided = True
+
+    def handle_collided(self):
+        CollisionHandler.handle_collided(self)
+        if self.collided:
+            self.destroy_itself()
 
     def update(self, delta):
         self.elapsed_time += delta
