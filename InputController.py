@@ -10,7 +10,7 @@ def process_button(button, down):
             # GameManager.find("Event System").trigger_event("ResetGame")  # pong
             ship = GameManager.find("Ship1")  # todo crap string comparison
             ship.shoot_bullet()
-    elif button == 1:
+    elif button == 1:  # return
         if down:
             ship = GameManager.find("Ship1")  # todo crap string comparison
             ship.shoot_missile()

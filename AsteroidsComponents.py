@@ -1,7 +1,8 @@
 from Components import *
-import time
 import uuid
-import random
+import GameManager
+import sys
+
 def build_ship(name):
     c = Component()
 
@@ -40,22 +41,23 @@ def build_bullet(pos, direction):
     c.activate()
     return c
 
-def build_missile(pos, direction):
+def build_missile(pos, angle):
     c = Component()
 
     c.add(Name("Missile" + str(uuid.uuid4())))
     c.add(Tag("Missile"))
-    c.add(Transform(pos))
-    size = 0.2
+    c.add(Transform(pos, angle=angle))
+    size = 0.3
     c.add(Shape([
-        [-size, -size],
-        [-size, size],
-        [size, size],
-        [size, -size]
+        [-size*4, -size],
+        [-size*4, size],
+        #[size*4, size],
+        #[size*4, -size]
+        [size*4, 0]
     ]))
     c.add(AABB(trigger=True))
     c.add(Body(linear_damping=0))
-    c.add(Missile(direction))
+    c.add(Missile())
 
     c.activate()
     return c
@@ -140,8 +142,7 @@ class Ship(TimeUpdatable, CollisionHandler):
             bullet = build_bullet(self.gameobject.pos, forward.rotated(i * spread))
 
     def shoot_missile(self):
-        pass
-
+        build_missile(self.gameobject.pos, self.gameobject.angle)
 
 
 class Asteroid(CollisionHandler):
@@ -153,7 +154,7 @@ class Asteroid(CollisionHandler):
         self.spawn_pos = spawn_pos
         #self.direction = Vec2(random.random - 0.5, random.random - 0.5).normalized()
         self.direction = Vec2(1, 1).normalized()
-        self.speed = 1
+        self.speed = 0
 
         self.size = size
         self.should_explode = False
@@ -192,11 +193,12 @@ class Asteroid(CollisionHandler):
 
 
 class Bullet(CollisionHandler, TimeUpdatable):
-    def __init__(self, direction):
+    def __init__(self, direction, lifetime=1):
         CollisionHandler.__init__(self)
         TimeUpdatable.__init__(self)
 
         self.direction = direction
+        self.lifetime = lifetime
 
         self.speed = 25
         self.elapsed_time = 0
@@ -232,7 +234,7 @@ class Bullet(CollisionHandler, TimeUpdatable):
     def update(self, delta):
         self.elapsed_time += delta
 
-        if self.elapsed_time > 1:
+        if self.elapsed_time > self.lifetime:
             self.destroy_itself()
 
     def destroy_itself(self):
@@ -241,10 +243,43 @@ class Bullet(CollisionHandler, TimeUpdatable):
 
 class Missile(Bullet):
     def __init__(self):
-        Component.__init__(self)
+        Bullet.__init__(self, Vec2(0, 0), 5)
+        self.speed /= 2
 
     def activate(self):
-        Component.activate(self)
+        Bullet.activate(self)
+        self.choose_target()
+
 
     def deactivate(self):
-        Component.deactivate(self)
+        Bullet.deactivate(self)
+
+    def forward_direction(self):
+        x = math.cos(self.gameobject.angle)
+        y = math.sin(self.gameobject.angle)
+        forward = Vec2(x, y)
+        return forward
+
+    def update(self, delta):
+        self.choose_target()
+
+        if self.target:
+            target_pointing_vec2 = (self.target.pos - self.gameobject.pos).normalized()
+            target_angle = math.atan2(target_pointing_vec2.y, target_pointing_vec2.x)
+            target_angle_deg = target_angle * 180.0 / math.pi
+            self.gameobject.angle = target_angle_deg
+
+        self.gameobject.velocity = self.speed * self.forward_direction()
+
+        Bullet.update(self, delta)
+
+    def choose_target(self):
+
+        min_distance = sys.maxint
+        self.target = None
+
+        for a in GameManager.tags["Asteroid"]:
+            dist = (a.pos - self.gameobject.pos).length_squared()
+            if (dist < min_distance):
+                min_distance = dist
+                self.target = a
