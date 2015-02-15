@@ -1,6 +1,6 @@
 from Components import *
 import time
-
+import uuid
 def build_ship(name):
     c = Component()
 
@@ -22,10 +22,10 @@ def build_bullet(pos, direction):
 
     c = Component()
 
-    c.add(Name("Bullet" + str(time.time()))) # fixme crap to add timestamp to make bullet names unique for xprotocol spawn which uses go.name
+    c.add(Name("Bullet" + str(uuid.uuid4())))
     c.add(Tag("Bullet"))
     c.add(Transform(pos))
-    size = 1
+    size = 0.2
     c.add(Shape([
         [-size, -size],
         [-size, size],
@@ -93,7 +93,13 @@ class Ship(TimeUpdatable, CollisionHandler):
     def shoot_bullet(self):
         x = math.cos(self.gameobject.angle)
         y = math.sin(self.gameobject.angle)
-        bullet = build_bullet(self.gameobject.pos, Vec2(x, y))
+        forward = Vec2(x, y)
+
+        max = 2
+        spread = math.pi / 8.0
+
+        for i in range(-max+1, max):
+            bullet = build_bullet(self.gameobject.pos, forward.rotated(i * spread))
 
     def shoot_missile(self):
         pass
@@ -118,7 +124,7 @@ class Bullet(CollisionHandler, TimeUpdatable):
 
         self.direction = direction
 
-        self.speed = 1
+        self.speed = 25
         self.elapsed_time = 0
 
     def activate(self):
