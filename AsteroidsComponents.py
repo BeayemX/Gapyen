@@ -10,7 +10,7 @@ def build_ship(name):
     c.add(Tag("Ship"))
     c.add(Transform())
     c.add(Shape([[0, 0], [-1, 1], [2, 0], [-1, -1]]))
-    c.add(AABB())
+    c.add(AABB(trigger=True))
     c.add(Body())
     c.add(Ship())
 
@@ -223,7 +223,7 @@ class Bullet(CollisionHandler, TimeUpdatable):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
 
-        if other.tag != "Ship" and other.tag != "Bullet":
+        if other.tag != "Ship" and other.tag != "Bullet" and other.tag != "Missile":
             self.collided = True
 
     def handle_collided(self):
