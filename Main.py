@@ -1,14 +1,8 @@
-from Components import *
-from PongComponents import *
 from eventsystem import EventSystem
-import  eventsystem
-import PongComponents
 
 import ComponentBuilder
 import UpdaterManager
-import settings
 
-import AsteroidsComponents
 from AsteroidsComponents import *
 
 
