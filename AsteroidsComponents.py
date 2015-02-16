@@ -2,6 +2,7 @@ from Components import *
 import uuid
 import GameManager
 import sys
+import random
 
 def build_ship(name):
     c = Component()
@@ -16,9 +17,6 @@ def build_ship(name):
 
     c.activate()
     return c
-
-def build_asteroid():
-    pass
 
 def build_bullet(pos, direction):
 
@@ -76,7 +74,8 @@ def build_asteroid(pos, size=4):
     ]))
     c.add(AABB(trigger=True))
     c.add(Body(linear_damping=0))
-    c.add(Asteroid(pos, size))
+    c.add(Asteroid(size))
+    c.add(DoughnutUniverse())
 
     c.activate()
     return c
@@ -146,25 +145,21 @@ class Ship(TimeUpdatable, CollisionHandler):
 
 
 class Asteroid(CollisionHandler):
-    def __init__(self, spawn_pos, size):
+    def __init__(self, size):
         CollisionHandler.__init__(self)
 
         # spawn random pos
         # random direction
-        self.spawn_pos = spawn_pos
-        #self.direction = Vec2(random.random - 0.5, random.random - 0.5).normalized()
-        self.direction = Vec2(1, 1).normalized()
-        self.speed = 0
+        self.direction = Vec2(random.random() - 0.5, random.random() - 0.5).normalized()
+        #self.direction = Vec2(1, 1).normalized()
+        self.speed = 5 - size
+        self.speed = 5
 
         self.size = size
         self.should_explode = False
 
-
     def activate(self):
         CollisionHandler.activate(self)
-
-
-        self.gameobject.pos = self.spawn_pos
         self.gameobject.velocity = self.direction * self.speed
 
     def deactivate(self):
@@ -182,14 +177,37 @@ class Asteroid(CollisionHandler):
 
     def explode(self):
         if self.size > 1:
-            #"""
-            b = build_asteroid(self.gameobject.pos, self.size -0.1)
-            b.velocity = b.velocity.rotated(math.pi / 2)
-            #b = build_asteroid(self.gameobject.pos, self.size -1)
-            #b.velocity = b.velocity.rotate(math.pi / 2)
-            #"""
+            build_asteroid(self.gameobject.pos, self.size - 1)
+            build_asteroid(self.gameobject.pos, self.size - 1)
 
         self.gameobject.deactivate()
+
+
+class DoughnutUniverse(TimeUpdatable):
+    def __init__(self):
+        TimeUpdatable.__init__(self)
+
+    def activate(self):
+        TimeUpdatable.activate(self)
+
+        t = GameManager.timelines["DefaultTimeline"]
+        t.register_updatable(self.gameobject)
+
+    def deactivate(self):
+        t = GameManager.timelines["DefaultTimeline"]
+        t.deregister_updatable(self.gameobject)
+
+        TimeUpdatable.deactivate(self)
+
+    def update(self, delta):
+        screen_w = settings.worldWidth * 0.5
+        screen_h = settings.worldWidth * settings.aspect * 0.5
+
+        if self.gameobject.pos.x > screen_w or self.gameobject.pos.x < -screen_w:
+            self.gameobject.pos.x *= -0.95
+
+        if self.gameobject.pos.y > screen_h or self.gameobject.pos.y < -screen_h:
+            self.gameobject.pos.y *= -0.95
 
 
 class Bullet(CollisionHandler, TimeUpdatable):
@@ -245,6 +263,7 @@ class Missile(Bullet):
     def __init__(self):
         Bullet.__init__(self, Vec2(0, 0), 5)
         self.speed /= 2
+        self.handling = 0.1
 
     def activate(self):
         Bullet.activate(self)
@@ -267,7 +286,34 @@ class Missile(Bullet):
             target_pointing_vec2 = (self.target.pos - self.gameobject.pos).normalized()
             target_angle = math.atan2(target_pointing_vec2.y, target_pointing_vec2.x)
             target_angle_deg = target_angle * 180.0 / math.pi
-            self.gameobject.angle = target_angle_deg
+
+            """
+            real_angle = target_angle - self.gameobject.angle
+            if abs(real_angle) > 180:  # target left
+                self.gameobject.angle -= self.handling
+                print "left"
+            else:  # target right
+                self.gameobject.angle += self.handling
+                print "right"
+            #"""
+
+
+
+
+            """
+            # mo approach
+            dtheta = target_angle_deg - self.gameobject.angle
+            if dtheta > 180:
+                self.gameobject.angle += 360
+            elif dtheta < -180:
+                self.gameobject.angle -= 360
+
+            amax = 20
+            if target_angle_deg - self.gameobject.angle < 0:
+                amax = -amax
+
+            self.gameobject.angle += max(amax, (target_angle_deg - self.gameobject.angle) * 0.1)
+            """
 
         self.gameobject.velocity = self.speed * self.forward_direction()
 
