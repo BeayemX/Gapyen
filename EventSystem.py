@@ -12,7 +12,7 @@ class EventSystem(TimeUpdatable):
         self.waiting_event_queue = []
         self.elapsedtime = 0.0
 
-        messages = ["P1LostLife", "P2LostLife"]
+        messages = ["P1LostLife", "P2LostLife", "LevelClear", "ResetGame", "AsteroidDestroyed"]
 
         for msg in messages:
             self.events[msg] = []

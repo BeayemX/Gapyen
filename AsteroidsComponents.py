@@ -93,6 +93,7 @@ def build_gui():
     c.activate()
     return c
 
+
 def build_gui_ship(name, pos):
     c = Component()
 
@@ -104,6 +105,13 @@ def build_gui_ship(name, pos):
     c.activate()
     return c
 
+
+def build_asteroid_spawn_controller():
+    c = Component()
+    c.add(Name("Asteroids Spawner"))
+    c.add(AsteroidsSpawner())
+    c.activate()
+    return c
 
 
 class Ship(TimeUpdatable, CollisionHandler):
@@ -159,6 +167,16 @@ class Ship(TimeUpdatable, CollisionHandler):
         if self.accelerating > 0:
             self.add_acceleration_force(delta)
 
+        x = self.gameobject.pos.x
+        y = self.gameobject.pos.y
+        w = settings.worldWidth * 0.5
+        h = settings.worldWidth * 0.5 * settings.aspect
+
+        if x < -w or x > w or y < -h or y > h:
+            self.lose_life = True
+            self.handle_collided()
+            print "outside"
+
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
         if other.tag == "Asteroid":
@@ -167,6 +185,7 @@ class Ship(TimeUpdatable, CollisionHandler):
     def handle_collided(self):
 
         if self.lose_life:
+            self.lose_life = False
             self.lives -= 1
 
             if self.gameobject.name == "Ship1":
@@ -227,6 +246,8 @@ class Asteroid(CollisionHandler):
             self.explode()
 
     def explode(self):
+        eventsystem.instance.send_event("AsteroidDestroyed")
+
         if self.size > 1:
             build_asteroid(self.gameobject.pos, self.size - 1)
             build_asteroid(self.gameobject.pos, self.size - 1)
@@ -251,14 +272,18 @@ class DoughnutUniverse(TimeUpdatable):
         TimeUpdatable.deactivate(self)
 
     def update(self, delta):
-        screen_w = settings.worldWidth * 0.5
-        screen_h = settings.worldWidth * settings.aspect * 0.5
+        right_border = settings.worldWidth * 0.5
+        top_border = settings.worldWidth * settings.aspect * 0.5
 
-        if self.gameobject.pos.x > screen_w or self.gameobject.pos.x < -screen_w:
-            self.gameobject.pos.x *= -0.95
+        if self.gameobject.pos.x > right_border:
+            self.gameobject.pos.x = -right_border
+        elif self.gameobject.pos.x < -right_border:
+            self.gameobject.pos.x = right_border
 
-        if self.gameobject.pos.y > screen_h or self.gameobject.pos.y < -screen_h:
-            self.gameobject.pos.y *= -0.95
+        if self.gameobject.pos.y > top_border:
+            self.gameobject.pos.y = -top_border
+        elif self.gameobject.pos.y < -top_border:
+            self.gameobject.pos.y = top_border
 
 
 class Bullet(CollisionHandler, TimeUpdatable):
@@ -425,3 +450,36 @@ class GUI(Component):
         gui_ship = self.p2_gui_lives[-1]
         self.p2_gui_lives.remove(gui_ship)
         gui_ship.deactivate()
+
+class AsteroidsSpawner(Component):
+    def __init__(self):
+        Component.__init__(self)
+        self.level = 0
+        self.destroyed_asteroids = 0
+
+    def activate(self):
+        Component.activate(self)
+
+        eventsystem.instance.register_event_listener("LevelClear", self.next_level)
+        eventsystem.instance.register_event_listener("AsteroidDestroyed", self.handle_asteroid_destroyed)
+
+    def deactivate(self):
+
+        eventsystem.instance.deregister_event_listener("LevelClear", self.next_level)
+        eventsystem.instance.deregister_event_listener("AsteroidDestroyed", self.handle_asteroid_destroyed)
+
+        Component.deactivate(self)
+
+    def next_level(self):
+        self.destroyed_asteroids = 0
+        self.level += 1
+        for i in range(self.level):
+            x = random.random() - 0.5 * settings.worldWidth
+            y = random.random() - 0.5 * settings.worldWidth * settings.aspect
+            randpos = Vec2(x, y)
+            build_asteroid(randpos)
+
+    def handle_asteroid_destroyed(self):
+        self.destroyed_asteroids += 1
+        if self.destroyed_asteroids >= self.level * 15: # fimxe magic number has to do with asteroids size and size decrease for children
+            eventsystem.instance.send_event("LevelClear")

@@ -137,9 +137,9 @@ def main():
     build_ship("Ship1")
     build_ship("Ship2").pos += Vec2(10, 0)
 
-    build_asteroid(Vec2(-10, -10))
-
+    eventsystem.instance.send_event("LevelClear")
     build_gui()
+    build_asteroid_spawn_controller()
 
 
     # start game
