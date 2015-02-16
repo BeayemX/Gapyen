@@ -68,10 +68,15 @@ def build_asteroid(pos, size=4):
     c.add(Tag("Asteroid"))
     c.add(Transform(pos=pos))
     c.add(Shape([
-        [-size, -size],
-        [-size, size],
-        [size, size],
-        [size, -size]
+        [0 * size, 1 * size],
+        [0.4 * size, 0.9 * size],
+        [1 * size, 0.2 * size],
+        [1 * size, 0 * size],
+        [1 * size, -0.2 * size],
+        [0.7 * size, -0.7 * size],
+        [0 * size, -1 * size],
+        [-0.5 * size, -0.5 * size],
+        [-0.7 * size, 0.3 * size]
     ]))
     c.add(AABB(trigger=True))
     c.add(Body(linear_damping=0))
