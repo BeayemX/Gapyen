@@ -10,7 +10,7 @@ def build_ship(name):
 
     c.add(Name(name))
     c.add(Tag("Ship"))
-    c.add(Transform(angle=math.pi))
+    c.add(Transform())
     c.add(Shape([[0, 0], [-1, 1], [2, 0], [-1, -1]]))
     c.add(AABB(trigger=True))
     c.add(Body())
@@ -317,14 +317,14 @@ class Missile(Bullet):
         if self.target:
             target_pointing_vec2 = self.target.pos - self.gameobject.pos
             target_angle = math.atan2(target_pointing_vec2.y, target_pointing_vec2.x)
-            diff = target_angle - self.gameobject.angle  #/ 180.0 * math.pi
+            diff = target_angle - self.gameobject.angle
 
             if diff >= math.pi:
                 self.gameobject.angle += math.pi * 2
             elif diff <= -math.pi:
                 self.gameobject.angle -= math.pi * 2
 
-            diff = target_angle - self.gameobject.angle  # / 180.0 * math.pi
+            diff = target_angle - self.gameobject.angle
 
             sign = 1
             if diff < 0:
