@@ -134,12 +134,16 @@ class Ship(TimeUpdatable, CollisionHandler):
         self.gameobject.shoot_bullet = self.shoot_bullet
         self.gameobject.shoot_missile = self.shoot_missile
 
+        eventsystem.instance.register_event_listener("ResetGame", self.reset)
+
         t = GameManager.timelines["DefaultTimeline"]
         t.register_updatable(self.gameobject)
 
     def deactivate(self):
         t = GameManager.timelines["DefaultTimeline"]
         t.deregister_updatable(self.gameobject)
+
+        eventsystem.instance.deregister_event_listener("ResetGame", self.reset)
 
         del self.gameobject.accelerate
         del self.gameobject.steer
@@ -214,6 +218,13 @@ class Ship(TimeUpdatable, CollisionHandler):
     def shoot_missile(self):
         build_missile(self.gameobject.pos, self.gameobject.angle)
 
+    def reset(self):
+        self.lives = 3
+        self.gameobject.pos = Vec2(0, 0)
+        self.gameobject.velocity = Vec2(0, 0)
+        self.gameobject.clear_forces()
+
+
 
 class Asteroid(CollisionHandler):
     def __init__(self, size):
@@ -230,9 +241,15 @@ class Asteroid(CollisionHandler):
 
     def activate(self):
         CollisionHandler.activate(self)
+
+        eventsystem.instance.register_event_listener("ResetGame", self.reset)
+
         self.gameobject.velocity = self.direction * self.speed
 
     def deactivate(self):
+
+        eventsystem.instance.deregister_event_listener("ResetGame", self.reset)
+
         CollisionHandler.deactivate(self)
 
     def handle_collision(self, other):
@@ -252,6 +269,9 @@ class Asteroid(CollisionHandler):
             build_asteroid(self.gameobject.pos, self.size - 1)
             build_asteroid(self.gameobject.pos, self.size - 1)
 
+        self.gameobject.deactivate()
+
+    def reset(self):
         self.gameobject.deactivate()
 
 
@@ -302,6 +322,8 @@ class Bullet(CollisionHandler, TimeUpdatable):
         CollisionHandler.activate(self)
         TimeUpdatable.activate(self)
 
+        eventsystem.instance.register_event_listener("ResetGame", self.reset)
+
         t = GameManager.timelines["DefaultTimeline"]
         t.register_updatable(self.gameobject)
 
@@ -310,6 +332,8 @@ class Bullet(CollisionHandler, TimeUpdatable):
     def deactivate(self):
         t = GameManager.timelines["DefaultTimeline"]
         t.deregister_updatable(self.gameobject)
+
+        eventsystem.instance.deregister_event_listener("ResetGame", self.reset)
 
         CollisionHandler.deactivate(self)
         TimeUpdatable.deactivate(self)
@@ -333,6 +357,9 @@ class Bullet(CollisionHandler, TimeUpdatable):
 
     def destroy_itself(self):
         self.gameobject.deactivate()
+
+    def reset(self):
+        self.destroy_itself()
 
 
 class Missile(Bullet):
@@ -403,9 +430,52 @@ class GUI(Component):
     def activate(self):
         Component.activate(self)
 
+        eventsystem.instance.register_event_listener("ResetGame", self.reset)
         eventsystem.instance.register_event_listener("P1LostLife", self.p1LostLife)
         eventsystem.instance.register_event_listener("P2LostLife", self.p2LostLife)
+        self.fill_gui()
 
+    def deactivate(self):
+        eventsystem.instance.deregister_event_listener("ResetGame", self.reset)
+        eventsystem.instance.deregister_event_listener("P1LostLife", self.p1LostLife)
+        eventsystem.instance.deregister_event_listener("P2LostLife", self.p2LostLife)
+
+        self.clear_gui()
+
+        Component.deactivate(self)
+
+    def p1LostLife(self):
+        self.p1_lives -= 1
+        gui_ship = self.p1_gui_lives[-1]
+        self.p1_gui_lives.remove(gui_ship)
+        gui_ship.deactivate()
+        self.check_game_over()
+
+    def p2LostLife(self):
+        self.p2_lives -= 1
+        gui_ship = self.p2_gui_lives[-1]
+        self.p2_gui_lives.remove(gui_ship)
+        gui_ship.deactivate()
+        self.check_game_over()
+
+    def check_game_over(self):
+        if self.p1_lives <= 0 and self.p2_lives <= 0:
+            eventsystem.instance.send_event("ResetGame")
+            print "reset"
+
+    def reset(self):
+        self.clear_gui()
+        self.p1_lives = 3
+        self.p2_lives = 3
+        self.fill_gui()
+
+        if not GameManager.find("Ship1"):  # todo crap string comparison
+            build_ship("Ship1")
+        if not GameManager.find("Ship2"):  # todo crap string comparison
+            build_ship("Ship2")
+
+
+    def fill_gui(self):
         space = 3
         topspacing = -1
         for i in range(self.p1_lives):
@@ -416,7 +486,6 @@ class GUI(Component):
             gui_ship = build_gui_ship("p1ship_" + str(i), pos)
             self.p1_gui_lives.append(gui_ship)
 
-
         for i in range(self.p2_lives):
 
             x = settings.worldWidth * 0.5 - space * (i+1)
@@ -425,10 +494,7 @@ class GUI(Component):
             gui_ship = build_gui_ship("p2ship_" + str(i), pos)
             self.p2_gui_lives.append(gui_ship)
 
-    def deactivate(self):
-        eventsystem.instance.deregister_event_listener("P1LostLife", self.p1LostLife)
-        eventsystem.instance.deregister_event_listener("P2LostLife", self.p2LostLife)
-
+    def clear_gui(self):
         for gui_ship in self.p1_gui_lives:
             gui_ship.deactivate()
         self.p1_gui_lives = []
@@ -437,19 +503,7 @@ class GUI(Component):
         self.p2_gui_lives = []
 
 
-        Component.deactivate(self)
 
-    def p1LostLife(self):
-        self.p1_lives -= 1
-        gui_ship = self.p1_gui_lives[-1]
-        self.p1_gui_lives.remove(gui_ship)
-        gui_ship.deactivate()
-
-    def p2LostLife(self):
-        self.p2_lives -= 1
-        gui_ship = self.p2_gui_lives[-1]
-        self.p2_gui_lives.remove(gui_ship)
-        gui_ship.deactivate()
 
 class AsteroidsSpawner(Component):
     def __init__(self):
@@ -460,11 +514,13 @@ class AsteroidsSpawner(Component):
     def activate(self):
         Component.activate(self)
 
+        eventsystem.instance.register_event_listener("ResetGame", self.reset)
         eventsystem.instance.register_event_listener("LevelClear", self.next_level)
         eventsystem.instance.register_event_listener("AsteroidDestroyed", self.handle_asteroid_destroyed)
 
     def deactivate(self):
 
+        eventsystem.instance.deregister_event_listener("ResetGame", self.reset)
         eventsystem.instance.deregister_event_listener("LevelClear", self.next_level)
         eventsystem.instance.deregister_event_listener("AsteroidDestroyed", self.handle_asteroid_destroyed)
 
@@ -483,3 +539,8 @@ class AsteroidsSpawner(Component):
         self.destroyed_asteroids += 1
         if self.destroyed_asteroids >= self.level * 15: # fimxe magic number has to do with asteroids size and size decrease for children
             eventsystem.instance.send_event("LevelClear")
+
+    def reset(self):
+        self.level = 0
+        self.destroyed_asteroids = 0
+        eventsystem.instance.send_event("LevelClear")
