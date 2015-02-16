@@ -88,6 +88,18 @@ def build_gui():
     c.activate()
     return c
 
+def build_gui_ship(name, pos):
+    c = Component()
+
+    c.add(Name(name))
+    c.add(Transform(pos, angle=math.pi/2))
+    c.add(Shape([[0, 0], [-1, 1], [2, 0], [-1, -1]]))
+
+
+    c.activate()
+    return c
+
+
 
 class Ship(TimeUpdatable, CollisionHandler):
     def __init__(self):
@@ -355,6 +367,8 @@ class GUI(Component):
         Component.__init__(self)
         self.p1_lives = 3
         self.p2_lives = 3
+        self.p1_gui_lives = []
+        self.p2_gui_lives = []
 
     def activate(self):
         Component.activate(self)
@@ -362,15 +376,47 @@ class GUI(Component):
         eventsystem.instance.register_event_listener("P1LostLife", self.p1LostLife)
         eventsystem.instance.register_event_listener("P2LostLife", self.p2LostLife)
 
+        space = 3
+        topspacing = -1
+        for i in range(self.p1_lives):
+
+            x = -settings.worldWidth * 0.5 + space * (i+1)
+            y = settings.worldWidth * 0.5 * settings.aspect - topspacing
+            pos = Vec2(x, y)
+            gui_ship = build_gui_ship("p1ship_" + str(i), pos)
+            self.p1_gui_lives.append(gui_ship)
+
+
+        for i in range(self.p2_lives):
+
+            x = settings.worldWidth * 0.5 - space * (i+1)
+            y = settings.worldWidth * 0.5 * settings.aspect - topspacing
+            pos = Vec2(x, y)
+            gui_ship = build_gui_ship("p2ship_" + str(i), pos)
+            self.p2_gui_lives.append(gui_ship)
+
     def deactivate(self):
         eventsystem.instance.deregister_event_listener("P1LostLife", self.p1LostLife)
         eventsystem.instance.deregister_event_listener("P2LostLife", self.p2LostLife)
+
+        for gui_ship in self.p1_gui_lives:
+            gui_ship.deactivate()
+        self.p1_gui_lives = []
+        for gui_ship in self.p2_gui_lives:
+            gui_ship.deactivate()
+        self.p2_gui_lives = []
+
+
         Component.deactivate(self)
 
     def p1LostLife(self):
         self.p1_lives -= 1
-        print "p1 lives: " + str(self.p1_lives)
+        gui_ship = self.p1_gui_lives[-1]
+        self.p1_gui_lives.remove(gui_ship)
+        gui_ship.deactivate()
 
     def p2LostLife(self):
         self.p2_lives -= 1
-        print "p2 lives: " + str(self.p2_lives)
+        gui_ship = self.p2_gui_lives[-1]
+        self.p2_gui_lives.remove(gui_ship)
+        gui_ship.deactivate()
