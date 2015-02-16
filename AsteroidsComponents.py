@@ -90,6 +90,7 @@ class Ship(TimeUpdatable, CollisionHandler):
 
         self.accelerating = False
         self.steering = 0
+        self.lives = 3
 
     def activate(self):
         TimeUpdatable.activate(self)
@@ -99,7 +100,13 @@ class Ship(TimeUpdatable, CollisionHandler):
         self.gameobject.shoot_bullet = self.shoot_bullet
         self.gameobject.shoot_missile = self.shoot_missile
 
+        t = GameManager.timelines["DefaultTimeline"]
+        t.register_updatable(self.gameobject)
+
     def deactivate(self):
+        t = GameManager.timelines["DefaultTimeline"]
+        t.deregister_updatable(self.gameobject)
+
         del self.gameobject.accelerate
         del self.gameobject.steer
         del self.gameobject.shoot_bullet
@@ -128,6 +135,13 @@ class Ship(TimeUpdatable, CollisionHandler):
 
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
+        if other.tag == "Asteroid":
+            self.lives -= 1
+
+    def handle_collided(self):
+        if self.lives <= 0:
+            self.gameobject.deactivate()
+
 
     def shoot_bullet(self):
         x = math.cos(self.gameobject.angle)
@@ -268,7 +282,6 @@ class Missile(Bullet):
     def activate(self):
         Bullet.activate(self)
         self.choose_target()
-
 
     def deactivate(self):
         Bullet.deactivate(self)

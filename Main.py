@@ -58,7 +58,6 @@ def main():
     posetransmitter.activate()
     posetransmitter.use_updater(posetransmitterupdates)
 
-
     """########## collider move out test
     width = 10
     halfwidth = width / 2
@@ -142,10 +141,8 @@ def main():
 
     # asteroids
     ship = build_ship("Ship1")
-    timeline_default.register_updatable(ship)
     ship2 = build_ship("Ship2")
     ship2.pos += Vec2(10, 0)
-    timeline_default.register_updatable(ship2)
 
     asteroid = build_asteroid(Vec2(-10, -10))
 
