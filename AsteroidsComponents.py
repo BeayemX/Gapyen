@@ -223,7 +223,7 @@ class Asteroid(CollisionHandler):
         # random direction
         self.direction = Vec2(random.random() - 0.5, random.random() - 0.5).normalized()
         #self.direction = Vec2(1, 1).normalized()
-        self.speed = 5 - size
+        self.speed = 10 - size*2
 
         self.size = size
         self.should_explode = False
