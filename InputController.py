@@ -6,20 +6,26 @@ def process_button(button, down):
 
     if button == 0:  # space
         if down:
-            # todo make event system accessible through GameManager
-            # GameManager.find("Event System").trigger_event("ResetGame")  # pong
             ship = GameManager.find("Ship1")  # todo crap string comparison
             if ship:
                 ship.shoot_bullet()
     elif button == 1:  # return
         if down:
+            ship = GameManager.find("Ship2")  # todo crap string comparison
+            if ship:
+                ship.shoot_missile()
+    elif button == 2:  # ctrl left
+        if down:
             ship = GameManager.find("Ship1")  # todo crap string comparison
             if ship:
                 ship.shoot_missile()
-    elif button == 2:
-        print "Ctrl-L"
-    elif button == 3:
-        print "Ctrl-R"
+    elif button == 3:  # ctrl right
+        if down:
+            ship = GameManager.find("Ship2")  # todo crap string comparison
+            if ship:
+                ship.shoot_bullet()
+
+
     else:
         print "button: " + str(button)
 
@@ -44,20 +50,20 @@ def process_axis(axis, value):
     """
 
     if axis == 0:
-        ship = GameManager.find("Ship1")  # todo crap string comparison
+        ship = GameManager.find("Ship2")  # todo crap string comparison
         if ship:
             ship.steer(-value)
     elif axis == 1:
-        ship = GameManager.find("Ship1")  # todo crap string comparison
+        ship = GameManager.find("Ship2")  # todo crap string comparison
         if ship:
             ship.accelerate(-value)
 
     elif axis == 2:
-        ship = GameManager.find("Ship2")  # todo crap string comparison
+        ship = GameManager.find("Ship1")  # todo crap string comparison
         if ship:
             ship.steer(-value)
     elif axis == 3:
-        ship = GameManager.find("Ship2")  # todo crap string comparison
+        ship = GameManager.find("Ship1")  # todo crap string comparison
         if ship:
             ship.accelerate(-value)
 
