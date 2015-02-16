@@ -10,7 +10,7 @@ def build_ship(name):
 
     c.add(Name(name))
     c.add(Tag("Ship"))
-    c.add(Transform())
+    c.add(Transform(angle=math.pi))
     c.add(Shape([[0, 0], [-1, 1], [2, 0], [-1, -1]]))
     c.add(AABB(trigger=True))
     c.add(Body())
@@ -188,7 +188,6 @@ class Asteroid(CollisionHandler):
         self.direction = Vec2(random.random() - 0.5, random.random() - 0.5).normalized()
         #self.direction = Vec2(1, 1).normalized()
         self.speed = 5 - size
-        self.speed = 5
 
         self.size = size
         self.should_explode = False
@@ -297,8 +296,8 @@ class Bullet(CollisionHandler, TimeUpdatable):
 class Missile(Bullet):
     def __init__(self):
         Bullet.__init__(self, Vec2(0, 0), 5)
-        self.speed /= 2
-        self.handling = 0.1
+        self.speed /= 2.0
+        self.handling = 3.0
 
     def activate(self):
         Bullet.activate(self)
@@ -315,39 +314,25 @@ class Missile(Bullet):
 
     def update(self, delta):
         self.choose_target()
-
         if self.target:
-            target_pointing_vec2 = (self.target.pos - self.gameobject.pos).normalized()
+            target_pointing_vec2 = self.target.pos - self.gameobject.pos
             target_angle = math.atan2(target_pointing_vec2.y, target_pointing_vec2.x)
-            target_angle_deg = target_angle * 180.0 / math.pi
+            diff = target_angle - self.gameobject.angle  #/ 180.0 * math.pi
 
-            """
-            real_angle = target_angle - self.gameobject.angle
-            if abs(real_angle) > 180:  # target left
-                self.gameobject.angle -= self.handling
-                print "left"
-            else:  # target right
-                self.gameobject.angle += self.handling
-                print "right"
-            #"""
+            if diff >= math.pi:
+                self.gameobject.angle += math.pi * 2
+            elif diff <= -math.pi:
+                self.gameobject.angle -= math.pi * 2
 
+            diff = target_angle - self.gameobject.angle  # / 180.0 * math.pi
 
+            sign = 1
+            if diff < 0:
+                sign = -1
+            elif diff == 0:
+                sign = 0
 
-
-            """
-            # mo approach
-            dtheta = target_angle_deg - self.gameobject.angle
-            if dtheta > 180:
-                self.gameobject.angle += 360
-            elif dtheta < -180:
-                self.gameobject.angle -= 360
-
-            amax = 20
-            if target_angle_deg - self.gameobject.angle < 0:
-                amax = -amax
-
-            self.gameobject.angle += max(amax, (target_angle_deg - self.gameobject.angle) * 0.1)
-            """
+            self.gameobject.angle += sign * min(abs(diff), self.handling * delta)
 
         self.gameobject.velocity = self.speed * self.forward_direction()
 
