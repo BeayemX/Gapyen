@@ -3,16 +3,6 @@ from Components import *
 
 instance = None  # singleton
 
-
-class Enum(set):
-    def __getattr__(self, name):
-        if name in self:
-            return name
-        raise Exception("EventType doesn't exist!")
-
-EventType = Enum(["ResetGame", "WallCollision"])
-
-
 class EventSystem(TimeUpdatable):
     def __init__(self):
         TimeUpdatable.__init__(self)
@@ -22,8 +12,10 @@ class EventSystem(TimeUpdatable):
         self.waiting_event_queue = []
         self.elapsedtime = 0.0
 
-        for key in EventType:
-            self.events[key] = []
+        messages = ["P1LostLife", "P2LostLife"]
+
+        for msg in messages:
+            self.events[msg] = []
 
     def activate(self):
         TimeUpdatable.activate(self)
@@ -56,7 +48,6 @@ class EventSystem(TimeUpdatable):
         working_queue = list(self.event_queue)
         self.event_queue = []
         for eventtype in working_queue:
-            print "work " + eventtype
             self.trigger_event(eventtype)
 
     def send_event(self, event):

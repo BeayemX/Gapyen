@@ -140,12 +140,12 @@ def main():
 
 
     # asteroids
-    ship = build_ship("Ship1")
-    ship2 = build_ship("Ship2")
-    ship2.pos += Vec2(10, 0)
+    build_ship("Ship1")
+    build_ship("Ship2").pos += Vec2(10, 0)
 
-    asteroid = build_asteroid(Vec2(-10, -10))
+    build_asteroid(Vec2(-10, -10))
 
+    build_gui()
 
 
     # start game

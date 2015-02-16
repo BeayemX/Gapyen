@@ -3,6 +3,7 @@ import uuid
 import GameManager
 import sys
 import random
+import eventsystem
 
 def build_ship(name):
     c = Component()
@@ -80,6 +81,13 @@ def build_asteroid(pos, size=4):
     c.activate()
     return c
 
+def build_gui():
+    c = Component()
+    c.add(Name("GUI"))
+    c.add(GUI())
+    c.activate()
+    return c
+
 
 class Ship(TimeUpdatable, CollisionHandler):
     def __init__(self):
@@ -91,6 +99,7 @@ class Ship(TimeUpdatable, CollisionHandler):
         self.accelerating = False
         self.steering = 0
         self.lives = 3
+        self.lose_life = False
 
     def activate(self):
         TimeUpdatable.activate(self)
@@ -136,12 +145,24 @@ class Ship(TimeUpdatable, CollisionHandler):
     def handle_collision(self, other):
         CollisionHandler.handle_collision(self, other)
         if other.tag == "Asteroid":
-            self.lives -= 1
+            self.lose_life = True
 
     def handle_collided(self):
-        if self.lives <= 0:
-            self.gameobject.deactivate()
 
+        if self.lose_life:
+            self.lives -= 1
+
+            if self.gameobject.name == "Ship1":
+                eventsystem.instance.send_event("P1LostLife")
+            else:
+                eventsystem.instance.send_event("P2LostLife")
+
+            self.gameobject.pos = Vec2(0, 0)
+            self.gameobject.velocity = Vec2(0, 0)
+            self.gameobject.clear_forces()
+
+            if self.lives <= 0:
+                self.gameobject.deactivate()
 
     def shoot_bullet(self):
         x = math.cos(self.gameobject.angle)
@@ -342,3 +363,29 @@ class Missile(Bullet):
             if (dist < min_distance):
                 min_distance = dist
                 self.target = a
+
+
+class GUI(Component):
+    def __init__(self):
+        Component.__init__(self)
+        self.p1_lives = 3
+        self.p2_lives = 3
+
+    def activate(self):
+        Component.activate(self)
+
+        eventsystem.instance.register_event_listener("P1LostLife", self.p1LostLife)
+        eventsystem.instance.register_event_listener("P2LostLife", self.p2LostLife)
+
+    def deactivate(self):
+        eventsystem.instance.deregister_event_listener("P1LostLife", self.p1LostLife)
+        eventsystem.instance.deregister_event_listener("P2LostLife", self.p2LostLife)
+        Component.deactivate(self)
+
+    def p1LostLife(self):
+        self.p1_lives -= 1
+        print "p1 lives: " + str(self.p1_lives)
+
+    def p2LostLife(self):
+        self.p2_lives -= 1
+        print "p2 lives: " + str(self.p2_lives)

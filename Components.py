@@ -612,6 +612,7 @@ class Body(Component):
 
         self.gameobject.add_force = self.add_force
         self.gameobject.add_torque = self.add_torque
+        self.gameobject.clear_forces = self.clear_forces
 
         self.gameobject.physics_timestep = self.physics_timestep
 
@@ -628,6 +629,7 @@ class Body(Component):
 
         del self.gameobject.add_force
         del self.gameobject.add_torque
+        del self.gameobject.clear_forces
         del self.gameobject.physics_timestep
 
         GameManager.deregister_body(self.gameobject)
